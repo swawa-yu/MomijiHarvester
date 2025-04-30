@@ -1,0 +1,11 @@
+# MomijiHarvester Configuration
+
+# List of lecture codes for small mode (testing/development)
+small_lecture_codes:
+  - "10000100"
+  # Add more lecture codes for small testing if needed
+
+# List of all lecture codes for full mode (production)
+# TODO: Implement a way to automatically generate or obtain the full list of lecture codes
+full_lecture_codes:
+  # - "..."

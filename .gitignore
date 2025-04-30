@@ -12,3 +12,4 @@
 src-old/
 output/
 uv.lock
+build/

@@ -28,7 +28,7 @@ class DataConverter:
         drop_columns: JSONに変換する際に削除する列名のリスト
         """
         print(f"- CSVからJSONを生成中: {json_file_path}...", end="")
-        df = pd.read_csv(csv_file_path, dtype=str, keep_default_na=False)
+        df = pd.read_csv(csv_file_path, dtype=str, keep_default_na=False, encoding="utf-8")
         df = df.drop(columns=drop_columns, errors="ignore")  # errors='ignore'で存在しない列を指定してもエラーにならないようにする
         df = df.set_index("講義コード", drop=False)  # 講義コードをキーとする
         d = df.T.to_dict()
