@@ -13,7 +13,7 @@ docs = ["sphinx"]
 [project.scripts]
 
 [tool.ruff]
-line-length = 88
+line-length = 1000
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "PL"]
