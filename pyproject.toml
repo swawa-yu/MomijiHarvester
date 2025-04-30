@@ -3,7 +3,7 @@ name = "MomijiHarvester"
 version = "0.1.0"
 requires-python = ">=3.11"
 
-dependencies = ["pydantic>=2.0"]
+dependencies = ["pydantic>=2.0", "pandas", "beautifulsoup4"]
 
 [project.optional-dependencies]
 dev = ["pytest>=7.0", "ruff", "mypy>=1.0"]
@@ -24,5 +24,6 @@ strict = true
 [tool.pytest.ini_options]
 minversion = "7.0"
 addopts = "-ra -q --import-mode=importlib"
+pythonpath = ["."]
 
 [tool.uv.sources]
