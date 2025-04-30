@@ -1,6 +1,9 @@
 # Virtual environment
 .venv
 
+# Python cache
+.pytest_cache/
+
 # Build artifacts
 *.egg-info/
 
