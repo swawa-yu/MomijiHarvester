@@ -1,0 +1,29 @@
+{
+    "name": "MomijiHarvester",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "args": {
+            "PYTHON_VERSION": "3.11"
+        }
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-python.python",
+                "charliermarsh.ruff"
+            ],
+            "settings": {
+                "python.defaultInterpreterPath": "${containerWorkspaceFolder}/.venv/bin/python",
+                "editor.defaultFormatter": "charliermarsh.ruff",
+                "editor.formatOnSave": true,
+                "python.linting.ruffEnabled": true,
+                "python.linting.enabled": true,
+                "python.analysis.typeCheckingMode": "basic",
+                "python.testing.pytestEnabled": true,
+                "python.testing.unittestEnabled": false
+            }
+        }
+    },
+    "postCreateCommand": "uv venv .venv && uv pip install -e '.[dev]'",
+    "remoteUser": "vscode"
+}
