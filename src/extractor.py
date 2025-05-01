@@ -1,4 +1,5 @@
 import copy
+from bs4.element import Tag, NavigableString  # TagとNavigableStringをインポート
 
 # 定数定義
 MIN_DETAIL_DATA_COUNT = 15
@@ -23,12 +24,16 @@ class SyllabusExtractor:
         # detail-dataクラスを持つtdタグからデータを抽出
         detail_datas = []
         for d in bsoup.find_all("td", class_="detail-data"):
-            # テキストを取得し、<br>タグを改行に置き換えた後、残りの改行をスペースに変換
-            text = d.get_text(separator="\n")
-            text = text.replace("\n", " ")  # すべての改行をスペースに置き換える
-            text = " ".join(text.split())  # 余分な空白を除去
-            text = text.replace("__BR__", "\n")  # <br>タグを改行に置き換える
-            detail_datas.append(text)
+            # <br>タグを改行に置き換え、それ以外の連続する空白や改行は1つのスペースにまとめる
+            text = ""
+            for content in d.contents:
+                if isinstance(content, NavigableString):
+                    text += " ".join(str(content).split())  # 連続する空白や改行を1つのスペースにまとめ
+                elif isinstance(content, Tag) and content.name == "br":
+                    text += "\n"  # <br>タグを改行に変換
+                elif isinstance(content, Tag):
+                    text += " ".join(content.get_text().split())  # タグ内のテキストを取得し、空白をまとめる
+            detail_datas.append(text.strip())  # 前後の空白を削除
 
         # 謎の空白と授業改善アンケートの説明の欄を削除
         # TODO: 削除するインデックスが固定になっているため、HTML構造の変更に弱い。
