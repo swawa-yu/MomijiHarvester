@@ -3,83 +3,108 @@
 HTMLファイルを元に開講部局一覧と講義データヘッダー一覧を生成して表示・保存します。
 """
 
-import glob
-import json
 import os
 import sys
+import glob
+import json
+import datetime
+import yaml
+from typing import List
 
 from extractor import SyllabusExtractor
 from models import Department, LectureDetail
+from converter import DataConverter
 
-OUTPUT_DIR = "output"
+CONFIG_PATH = "config.yaml"
+OUTPUT_ROOT = "output"
 
 
 def main() -> None:
     """メイン処理"""
-    # 出力ディレクトリ作成
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    # 設定読み込み
+    try:
+        with open(CONFIG_PATH, encoding="utf-8") as f:
+            config = yaml.safe_load(f)
+    except FileNotFoundError:
+        print(f"設定ファイルが見つかりません: {CONFIG_PATH}", file=sys.stderr)
+        sys.exit(1)
 
-    # 開講部局一覧の抽出
-    index_path = "docs/syllabusHtml-small/index.html"
+    # 日付とモード設定
+    date_str = datetime.datetime.now().strftime("%Y-%m-%d")
+    # sample: 少量検証用、小HTMLを優先
+    if os.path.exists("docs/syllabusHtml-small/index.html"):
+        index_path = "docs/syllabusHtml-small/index.html"
+        mode = "sample"
+    else:
+        index_path = "docs/syllabusHtml/index.html"
+        mode = "all"
+    suffix = f"_{mode}" if mode == "sample" else ""
+
+    # 出力ディレクトリ
+    out_dir = os.path.join(OUTPUT_ROOT, date_str, mode)
+    os.makedirs(out_dir, exist_ok=True)
+
+    # 抽出
     try:
         with open(index_path, encoding="utf-8") as f:
-            index_html = f.read()
-    except FileNotFoundError:
-        print(f"エラー: インデックスHTMLが見つかりません: {index_path}", file=sys.stderr)
-        sys.exit(1)
-
-    extractor = SyllabusExtractor(index_html)
-    try:
-        departments: list[Department] = extractor.extract_departments()
+            html = f.read()
+        extractor = SyllabusExtractor(html)
+        departments: List[Department] = extractor.extract_departments()
     except Exception as e:
-        print(f"開講部局抽出中にエラーが発生しました: {e}", file=sys.stderr)
+        print(f"開講部局抽出中にエラー: {e}", file=sys.stderr)
         sys.exit(1)
 
-    # 表示
-    print("開講部局一覧:")
-    for dept in departments:
-        print(f"  - {dept.name} (code: {dept.code}, url: {dept.url})")
+    print(f"開講部局一覧を {out_dir}/departments{suffix}.csv に出力しました")
 
-    # CSV/JSON 保存
-    # 動作確認用（small HTML）か本番かでファイル名にサフィックスを付与
-    suffix = "_sample" if "small" in index_path else ""
-    dept_csv = os.path.join(OUTPUT_DIR, f"departments{suffix}.csv")
-    dept_json = os.path.join(OUTPUT_DIR, f"departments{suffix}.json")
-    # CSV書き込み
+    # ファイル出力: 部局
+    dept_csv = os.path.join(out_dir, f"departments{suffix}.csv")
+    dept_json = os.path.join(out_dir, f"departments{suffix}.json")
+    # CSV
     with open(dept_csv, "w", encoding="utf-8") as f:
         f.write("name,code,url\n")
         for d in departments:
             f.write(f"{d.name},{d.code},{d.url}\n")
-    # JSON書き込み
-    with open(dept_json, "w", encoding="utf-8") as f:
-        json.dump([d.__dict__ for d in departments], f, ensure_ascii=False, indent=2)
+    # JSON
+    DataConverter.to_json([d.__dict__ for d in departments], dept_json)
 
-    # 講義データヘッダーの抽出
-    header_set = set()
-    pattern = "docs/syllabusHtml-small/*.html"
-    for html_file in glob.glob(pattern):
-        # 詳細ページのみ処理: index.html および *_AA.html（部局一覧）をスキップ
-        if html_file.endswith("index.html") or html_file.endswith("_AA.html"):
-            continue
+    # 講義一覧取得
+    lectures = []
+    for dept in departments:
+        rel = dept.url
         try:
-            with open(html_file, encoding="utf-8") as f:
-                detail_html = f.read()
-            detail_extractor = SyllabusExtractor(detail_html)
-            lecture: LectureDetail = detail_extractor.extract_lecture_detail()
-            header_set.update(vars(lecture).keys())
-        except Exception as e:
-            print(f"ヘッダー抽出中にエラー: {html_file} -> {e}", file=sys.stderr)
+            # HTML取得
+            url = f"https://momiji.hiroshima-u.ac.jp/syllabusHtml/{rel}"
+            import requests
+            r = requests.get(url)
+            r.encoding = r.apparent_encoding
+            lec_html = r.text
+            lecturer = SyllabusExtractor(lec_html)
+            lectures.append(lecturer.extract_lecture_detail())
+        except Exception:
+            continue
 
-    headers = sorted(header_set)
-    print("講義データヘッダー一覧:")
-    for h in headers:
-        print(f"  {h}")
+    # 全情報CSV/JSON出力
+    lec_csv = os.path.join(out_dir, f"syllabus_data{suffix}.csv")
+    lec_json = os.path.join(out_dir, f"syllabus_data{suffix}.json")
+    # to list of dict
+    lec_dicts = [vars(ld) for ld in lectures]
+    DataConverter.to_csv(lec_dicts, lec_csv)
+    DataConverter.to_json(lec_dicts, lec_json)
 
-    # ヘッダーJSON保存
-    header_json = os.path.join(OUTPUT_DIR, f"lecture_headers{suffix}.json")
-    with open(header_json, "w", encoding="utf-8") as f:
-        json.dump(headers, f, ensure_ascii=False, indent=2)
+    print(f"講義情報({len(lectures)} 件)を {lec_csv}, {lec_json} に出力しました")
+
+    # 不要カラム削除版出力
+    drop_cols = config.get("drop_columns", {}).get(mode, [])
+    if drop_cols:
+        filtered = [
+            {k: v for k, v in lec.items() if k not in drop_cols}
+            for lec in lec_dicts
+        ]
+        filt_csv = os.path.join(out_dir, f"syllabus_data_filtered{suffix}.csv")
+        filt_json = os.path.join(out_dir, f"syllabus_data_filtered{suffix}.json")
+        DataConverter.to_csv(filtered, filt_csv)
+        DataConverter.to_json(filtered, filt_json)
+        print(f"不要カラム削除版を {filt_csv}, {filt_json} に出力しました")
 
 
 if __name__ == "__main__":
-    main()
