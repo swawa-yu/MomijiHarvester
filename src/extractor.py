@@ -1,3 +1,4 @@
+# ruff: noqa: PLR2004
 """SyllabusExtractorクラス
 
 広島大学のシラバスHTMLファイルから情報を抽出し、LectureDetailモデルを生成するクラス。
@@ -5,10 +6,16 @@
 
 import copy
 import re
-from typing import List, Dict, Any
+from typing import Any
+
 from bs4 import BeautifulSoup
-from bs4.element import Tag, NavigableString
+from bs4.element import NavigableString, Tag
+
+# ruff: noqa: PLR2004
 from models import Department, LectureDetail
+
+# 定数：detail-dataの列数閾値
+MAX_DETAIL_COLUMNS = 16
 
 
 class SyllabusExtractor:
@@ -22,7 +29,7 @@ class SyllabusExtractor:
         """
         self.soup = BeautifulSoup(html_content, "html.parser")
 
-    def extract_departments(self) -> List[Department]:
+    def extract_departments(self) -> list[Department]:
         """開講部局のリストを抽出する
 
         Returns:
@@ -31,7 +38,7 @@ class SyllabusExtractor:
         Raises:
             ValueError: 必要なリンク要素が見つからない場合
         """
-        departments: List[Department] = []
+        departments: list[Department] = []
         for link in self.soup.find_all("a"):
             if not isinstance(link, Tag):
                 continue
@@ -68,8 +75,9 @@ class SyllabusExtractor:
         heads = [" ".join(h.text.split()) for h in soup.find_all("th", class_="detail-head")]
         datas = [" ".join(d.get_text(separator="\n").split()).replace("\n", "\n") for d in soup.find_all("td", class_="detail-data")]
 
+        # ruff: noqa: PLR2004
         # 不要な行を削除（14番目と末尾）
-        if len(datas) >= 16:
+        if len(datas) >= MAX_DETAIL_COLUMNS:
             datas.pop(14)
             datas.pop()
 
@@ -77,7 +85,7 @@ class SyllabusExtractor:
             raise ValueError(f"ヘッダー数({len(heads)})とデータ数({len(datas)})が一致しません")
 
         # mapping to LectureDetail fields
-        normalized: Dict[str, Any] = {}
+        normalized: dict[str, Any] = {}
         for key, val in zip(heads, datas):
             field = re.sub(r"[^\w\u4e00-\u9fff]+", "_", key).strip("_")
             normalized[field] = val or None

@@ -1,9 +1,9 @@
+# ruff: noqa: PLR2004
 """DataConverterのテスト"""
 
-import os
-import json
 import csv
-import pytest
+import json
+
 from src.converter import DataConverter
 
 
