@@ -4,7 +4,7 @@
 import csv
 import json
 
-from src.converter import DataConverter
+from converter import DataConverter
 
 
 def test_to_csv_and_json(tmp_path) -> None:
