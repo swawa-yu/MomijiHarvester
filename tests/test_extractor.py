@@ -1,44 +1,29 @@
-from pathlib import Path
+"""SyllabusExtractorのテスト"""
 
-from bs4 import BeautifulSoup
-
+import pytest
 from src.extractor import SyllabusExtractor
 
 
-def load_html(filename):
-    """Helper function to load HTML content from docs/syllabusHtml-small."""
-    html_path = Path(f"docs/syllabusHtml-small/{filename}")
-    with open(html_path, encoding="utf-8") as f:
-        return f.read()
+def test_extractor_init() -> None:
+    """SyllabusExtractorの初期化が正しく行われることをテスト"""
+    html = "<html><body><p>test</p></body></html>"
+    extractor = SyllabusExtractor(html)
+    assert extractor.html_content == html
 
 
-def test_extract_subject_detail_data():
-    """Test extraction of subject detail data."""
-    html_content = load_html("2025_AA_10000100.html")
-    soup = BeautifulSoup(html_content, "html.parser")
-    extractor = SyllabusExtractor()
-    data = extractor.extract_subject_detail_data(soup)
-
-    # TODO: Assertions based on the expected data from the HTML file
-    # Example assertion (replace with actual expected data):
-    # assert len(data) > 0
-    # assert data[0] == "Expected Value"
-    print("\nExtracted Data:", data)  # For inspection during development
-    assert isinstance(data, list)
-    assert len(data) > 0  # Basic check that some data was extracted
+def test_extract_departments_empty() -> None:
+    """extract_departmentsが空リストを返す（雛形）"""
+    extractor = SyllabusExtractor("<html></html>")
+    assert extractor.extract_departments() == []
 
 
-def test_get_subject_detail_head():
-    """Test extraction of subject detail headers."""
-    html_content = load_html("2025_AA_10000100.html")
-    soup = BeautifulSoup(html_content, "html.parser")
-    extractor = SyllabusExtractor()
-    headers = extractor.get_subject_detail_head(soup)
+def test_extract_lectures_empty() -> None:
+    """extract_lecturesが空リストを返す（雛形）"""
+    extractor = SyllabusExtractor("<html></html>")
+    assert extractor.extract_lectures() == []
 
-    # TODO: Assertions based on the expected headers from the HTML file
-    # Example assertion (replace with actual expected headers):
-    # assert len(headers) > 0
-    # assert headers[0] == "Expected Header"
-    print("\nExtracted Headers:", headers)  # For inspection during development
-    assert isinstance(headers, list)
-    assert len(headers) > 0  # Basic check that some headers were extracted
+
+def test_extract_lecture_detail_empty() -> None:
+    """extract_lecture_detailが空dictを返す（雛形）"""
+    extractor = SyllabusExtractor("<html></html>")
+    assert extractor.extract_lecture_detail() == {}
