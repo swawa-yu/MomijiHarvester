@@ -3,11 +3,11 @@
 HTMLファイルを元に開講部局一覧と講義データヘッダー一覧を生成して表示・保存します。
 """
 
-import sys
-import os
 import glob
 import json
-from typing import List
+import os
+import sys
+
 from extractor import SyllabusExtractor
 from models import Department, LectureDetail
 
@@ -22,7 +22,7 @@ def main() -> None:
     # 開講部局一覧の抽出
     index_path = "docs/syllabusHtml-small/index.html"
     try:
-        with open(index_path, "r", encoding="utf-8") as f:
+        with open(index_path, encoding="utf-8") as f:
             index_html = f.read()
     except FileNotFoundError:
         print(f"エラー: インデックスHTMLが見つかりません: {index_path}", file=sys.stderr)
@@ -30,7 +30,7 @@ def main() -> None:
 
     extractor = SyllabusExtractor(index_html)
     try:
-        departments: List[Department] = extractor.extract_departments()
+        departments: list[Department] = extractor.extract_departments()
     except Exception as e:
         print(f"開講部局抽出中にエラーが発生しました: {e}", file=sys.stderr)
         sys.exit(1)
@@ -41,14 +41,16 @@ def main() -> None:
         print(f"  - {dept.name} (code: {dept.code}, url: {dept.url})")
 
     # CSV/JSON 保存
-    dept_csv = os.path.join(OUTPUT_DIR, "departments.csv")
-    dept_json = os.path.join(OUTPUT_DIR, "departments.json")
-    # CSV
+    # 動作確認用（small HTML）か本番かでファイル名にサフィックスを付与
+    suffix = "_sample" if "small" in index_path else ""
+    dept_csv = os.path.join(OUTPUT_DIR, f"departments{suffix}.csv")
+    dept_json = os.path.join(OUTPUT_DIR, f"departments{suffix}.json")
+    # CSV書き込み
     with open(dept_csv, "w", encoding="utf-8") as f:
         f.write("name,code,url\n")
         for d in departments:
             f.write(f"{d.name},{d.code},{d.url}\n")
-    # JSON
+    # JSON書き込み
     with open(dept_json, "w", encoding="utf-8") as f:
         json.dump([d.__dict__ for d in departments], f, ensure_ascii=False, indent=2)
 
@@ -60,7 +62,7 @@ def main() -> None:
         if html_file.endswith("index.html") or html_file.endswith("_AA.html"):
             continue
         try:
-            with open(html_file, "r", encoding="utf-8") as f:
+            with open(html_file, encoding="utf-8") as f:
                 detail_html = f.read()
             detail_extractor = SyllabusExtractor(detail_html)
             lecture: LectureDetail = detail_extractor.extract_lecture_detail()
@@ -74,7 +76,7 @@ def main() -> None:
         print(f"  {h}")
 
     # ヘッダーJSON保存
-    header_json = os.path.join(OUTPUT_DIR, "lecture_headers.json")
+    header_json = os.path.join(OUTPUT_DIR, f"lecture_headers{suffix}.json")
     with open(header_json, "w", encoding="utf-8") as f:
         json.dump(headers, f, ensure_ascii=False, indent=2)
 
