@@ -6,6 +6,7 @@
 from typing import List, Dict, Any
 import csv
 import json
+import pandas as pd
 
 
 class DataConverter:
@@ -27,12 +28,31 @@ class DataConverter:
             writer.writerows(data)
 
     @staticmethod
-    def to_json(data: List[Dict[str, Any]], filepath: str) -> None:
-        """データをJSONファイルとして保存する
+    def to_json(data: List[Dict[str, Any]], filepath: str, drop_columns: List[str] = []) -> None:
+        """CSVデータをJSONファイルとして保存する
 
         Args:
             data (List[Dict[str, Any]]): 保存するデータ
             filepath (str): 出力先ファイルパス
+            drop_columns (List[str], optional): JSONに変換する際に削除する列名リスト。デフォルトは空リスト。
+
+        Raises:
+            ValueError: データが空の場合
+            IOError: ファイル書き込み時の入出力エラー
         """
-        with open(filepath, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
+        if not data:
+            raise ValueError("空のデータはJSONに変換できません。")
+        try:
+            df = pd.DataFrame(data)
+            if drop_columns:
+                df = df.drop(columns=drop_columns, errors="ignore")
+            try:
+                df = df.set_index("講義コード", drop=False)
+                d = df.T.to_dict()
+            except KeyError:
+                # 講義コード列が存在しない場合はそのままリストを出力
+                d = data
+            with open(filepath, "w", encoding="utf-8") as f:
+                json.dump(d, f, ensure_ascii=False, indent=2)
+        except IOError as e:
+            raise IOError(f"JSONファイルの書き込みに失敗しました: {e}")

@@ -1,60 +1,82 @@
 """MomijiHarvester メインモジュール
 
-シラバスHTMLから情報を抽出し、CSV/JSON形式で出力するエントリーポイント。
+HTMLファイルを元に開講部局一覧と講義データヘッダー一覧を生成して表示・保存します。
 """
 
-import argparse
-import yaml
-from typing import Any, Dict, List
+import sys
+import os
+import glob
+import json
+from typing import List
 from extractor import SyllabusExtractor
-from converter import DataConverter
+from models import Department, LectureDetail
 
-
-def load_config(config_path: str) -> Dict[str, Any]:
-    """設定ファイル（YAML）を読み込む
-
-    Args:
-        config_path (str): 設定ファイルのパス
-
-    Returns:
-        Dict[str, Any]: 設定内容
-    """
-    with open(config_path, "r", encoding="utf-8") as f:
-        return yaml.safe_load(f)
-
-
-def parse_args() -> argparse.Namespace:
-    """コマンドライン引数をパースする
-
-    Returns:
-        argparse.Namespace: パース結果
-    """
-    parser = argparse.ArgumentParser(description="MomijiHarvester: シラバス情報抽出ツール")
-    parser.add_argument("--config", type=str, default="config.yaml", help="設定ファイルパス")
-    parser.add_argument("--mode", type=str, choices=["sample", "all"], default="sample", help="取得モード")
-    parser.add_argument("--output-dir", type=str, default="output", help="出力ディレクトリ")
-    return parser.parse_args()
+OUTPUT_DIR = "output"
 
 
 def main() -> None:
     """メイン処理"""
-    args = parse_args()
-    config = load_config(args.config)
+    # 出力ディレクトリ作成
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-    # サンプルHTMLファイルのパス（例: docs/syllabusHtml-small/2025_AA.html）
-    html_path = config.get("html_path", "docs/syllabusHtml-small/2025_AA.html")
-    with open(html_path, "r", encoding="utf-8") as f:
-        html_content = f.read()
+    # 開講部局一覧の抽出
+    index_path = "docs/syllabusHtml-small/index.html"
+    try:
+        with open(index_path, "r", encoding="utf-8") as f:
+            index_html = f.read()
+    except FileNotFoundError:
+        print(f"エラー: インデックスHTMLが見つかりません: {index_path}", file=sys.stderr)
+        sys.exit(1)
 
-    extractor = SyllabusExtractor(html_content)
-    departments = extractor.extract_departments()
-    lectures = extractor.extract_lectures()
-    # 講義詳細情報の抽出例
-    # lecture_detail = extractor.extract_lecture_detail()
+    extractor = SyllabusExtractor(index_html)
+    try:
+        departments: List[Department] = extractor.extract_departments()
+    except Exception as e:
+        print(f"開講部局抽出中にエラーが発生しました: {e}", file=sys.stderr)
+        sys.exit(1)
 
-    # CSV/JSON出力例
-    DataConverter.to_csv(lectures, f"{args.output_dir}/syllabus_data.csv")
-    DataConverter.to_json(lectures, f"{args.output_dir}/syllabus_data.json")
+    # 表示
+    print("開講部局一覧:")
+    for dept in departments:
+        print(f"  - {dept.name} (code: {dept.code}, url: {dept.url})")
+
+    # CSV/JSON 保存
+    dept_csv = os.path.join(OUTPUT_DIR, "departments.csv")
+    dept_json = os.path.join(OUTPUT_DIR, "departments.json")
+    # CSV
+    with open(dept_csv, "w", encoding="utf-8") as f:
+        f.write("name,code,url\n")
+        for d in departments:
+            f.write(f"{d.name},{d.code},{d.url}\n")
+    # JSON
+    with open(dept_json, "w", encoding="utf-8") as f:
+        json.dump([d.__dict__ for d in departments], f, ensure_ascii=False, indent=2)
+
+    # 講義データヘッダーの抽出
+    header_set = set()
+    pattern = "docs/syllabusHtml-small/*.html"
+    for html_file in glob.glob(pattern):
+        # 詳細ページのみ処理: index.html および *_AA.html（部局一覧）をスキップ
+        if html_file.endswith("index.html") or html_file.endswith("_AA.html"):
+            continue
+        try:
+            with open(html_file, "r", encoding="utf-8") as f:
+                detail_html = f.read()
+            detail_extractor = SyllabusExtractor(detail_html)
+            lecture: LectureDetail = detail_extractor.extract_lecture_detail()
+            header_set.update(vars(lecture).keys())
+        except Exception as e:
+            print(f"ヘッダー抽出中にエラー: {html_file} -> {e}", file=sys.stderr)
+
+    headers = sorted(header_set)
+    print("講義データヘッダー一覧:")
+    for h in headers:
+        print(f"  {h}")
+
+    # ヘッダーJSON保存
+    header_json = os.path.join(OUTPUT_DIR, "lecture_headers.json")
+    with open(header_json, "w", encoding="utf-8") as f:
+        json.dump(headers, f, ensure_ascii=False, indent=2)
 
 
 if __name__ == "__main__":
