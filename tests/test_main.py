@@ -1,6 +1,7 @@
 """main.pyの雛形テスト"""
 
 import pytest
+
 from src import main
 
 

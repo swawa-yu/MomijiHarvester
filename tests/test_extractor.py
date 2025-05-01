@@ -1,6 +1,5 @@
 """SyllabusExtractorのテスト"""
 
-import pytest
 from src.extractor import SyllabusExtractor
 
 
