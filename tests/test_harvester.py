@@ -14,6 +14,6 @@ def test_save_results_credits_integer(tmp_path: Path):
     harv.save_results(subjects, out)
     assert out.exists()
     data = json.loads(out.read_text(encoding="utf-8"))
-    # Credits in JSON should be integer, not float
-    assert isinstance(data[0]["credits"], int)
-    assert data[0]["credits"] == 2
+    # Credits in JSON should be in the original string format (e.g., "2.0")
+    assert isinstance(data[0]["credits"], str)
+    assert data[0]["credits"] == "2.0"

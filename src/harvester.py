@@ -43,20 +43,15 @@ class Harvester:
             if "credits" in d and d.get("credits") is not None:
                 try:
                     v = d["credits"]
-                    # If it's float and integer-valued, convert to int
-                    if isinstance(v, float) and v.is_integer():
-                        d["credits"] = int(v)
-                    # If it's a string numeric, attempt to parse
-                    elif isinstance(v, str):
-                        try:
-                            fv = float(v)
-                            if fv.is_integer():
-                                d["credits"] = int(fv)
-                            else:
-                                # leave as string if fractional
-                                d["credits"] = v
-                        except Exception:
-                            d["credits"] = v
+                    # For backward compatibility with historical JSON, keep credits
+                    # as string formatted with one decimal place ("2.0", "3.5", etc.).
+                    try:
+                        fv = float(v)
+                        # Format with one decimal to match historical representation
+                        d["credits"] = f"{fv:.1f}"
+                    except Exception:
+                        # If it's not a number, leave original value as-is
+                        d["credits"] = v
                 except Exception:
                     # If anything unexpected happens, leave it as-is
                     pass
