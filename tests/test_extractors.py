@@ -85,7 +85,7 @@ def test_extract_subject_data_valid(sample_html_content_aa10000100: str):
     assert subject.term == "1年次生 前期 １ターム"  # 空白に注意
     assert subject.lecture_type == "講義"
     assert subject.lecture_type_detail_1 == "対面, オンライン(オンデマンド型)"  # カンマ区切りで取得される想定
-    assert isinstance(subject.credits, float)
+    assert isinstance(subject.credits, int)
     assert subject.credits == EXPECTED_CREDITS
     assert subject.language == "B : 日本語・英語"
     # media_equipment はリストになるはず

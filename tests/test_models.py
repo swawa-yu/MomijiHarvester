@@ -1,6 +1,6 @@
 from models import Subject
 
-EXPECTED_CREDITS = 2.0
+EXPECTED_CREDITS = 2
 
 
 def test_credits_parsing_variants():
@@ -8,6 +8,12 @@ def test_credits_parsing_variants():
     assert Subject(credits="2").credits == EXPECTED_CREDITS
     assert Subject(credits=2).credits == EXPECTED_CREDITS
     assert Subject(credits="(2)").credits == EXPECTED_CREDITS
+
+
+def test_subject_rejects_fractional_credits():
+    import pytest
+    with pytest.raises(ValueError):
+        Subject(credits=1.5)
 
 
 def test_list_field_parsing():

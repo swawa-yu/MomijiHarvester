@@ -46,8 +46,8 @@ class Subject(BaseModel):
     )
 
     # 時間・単位
-    credits: float | None = Field(None, alias="単位")
-    weekly_hours: str | None = Field(None, alias="週時間")
+    credits: int | None = Field(None, alias="単位")
+    weekly_hours: int | None = Field(None, alias="週時間")
     language: str | None = Field(None, alias="使用言語")
 
     # 分野/対象
@@ -107,7 +107,9 @@ class Subject(BaseModel):
         if v is None:
             return None
         if isinstance(v, (int, float)):
-            return float(v)
+            if isinstance(v, float) and not float(v).is_integer():
+                raise ValueError("credits must be integer; fractional value detected")
+            return int(v)
         s = str(v)
         # Normalize Japanese full-width digits etc and parentheses
         s = s.replace("\xa0", " ")
@@ -116,7 +118,10 @@ class Subject(BaseModel):
         m = re.search(r"(\d+(?:\.\d+)?)", s)
         if m:
             try:
-                return float(m.group(1))
+                fv = float(m.group(1))
+                if not fv.is_integer():
+                    raise ValueError("credits must be integer; fractional value detected")
+                return int(round(fv))
             except Exception:
                 return None
         return None
@@ -138,6 +143,21 @@ class Subject(BaseModel):
             s = s.replace(sep, ",")
         items = [it.strip() for it in s.split(",") if it.strip()]
         return items if items else None
+
+    @field_validator("weekly_hours", mode="before")
+    def _parse_weekly_hours(cls, v):
+        if v is None:
+            return None
+        try:
+            if isinstance(v, int):
+                return v
+            val = float(str(v))
+            if not val.is_integer():
+                raise ValueError("weekly_hours must be integer; fractional value detected")
+            return int(round(val))
+        except Exception:
+            # Not parseable; return None so validation later can catch it
+            raise ValueError("weekly_hours must be an integer or integer-like string")
 
     @model_validator(mode="before")
     def _normalize_empty_strings(cls, values: dict | None):
