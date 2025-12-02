@@ -69,8 +69,21 @@ def test_harvest_from_web_small(monkeypatch, tmp_path: Path, minimal_subject_dat
     settings.live_small_codes = ["10000100"]
     harv = Harvester(settings)
 
+    captured = {"session_headers": [], "request_headers": []}
+
     def fake_get(url, *args, **kwargs):
         # Return the content of the fixture file when the URL ends with a detail page
+        # Capture the headers for assertions
+        # In requests, session headers are stored in the Session object (self.headers)
+        # the kwargs may include 'headers' which overrides session headers for the request.
+        try:
+            # self is the first positional arg when called as Session.get(self, ...)
+            self_obj = args[0] if args else None
+            if self_obj is not None and hasattr(self_obj, "headers"):
+                captured["session_headers"].append(dict(self_obj.headers))
+            captured["request_headers"].append(dict(kwargs.get("headers", {})))
+        except Exception:
+            pass
         if url.endswith("2025_AA_10000100.html"):
             path = Path("tests/fixtures/html/small/2025_AA_10000100.html")
             return _dummy_response(path.read_text(encoding="utf-8"))
@@ -80,10 +93,25 @@ def test_harvest_from_web_small(monkeypatch, tmp_path: Path, minimal_subject_dat
         return _dummy_response("", 404)
 
     monkeypatch.setattr(requests.Session, "get", lambda self, *args, **kwargs: fake_get(args[0], *args[1:], **kwargs))
-    subjects = harv.harvest_from_web(target_codes=None, allow_full=False)
+    # Spy on sleeps to ensure rate-limiting occurs
+    sleep_args: list[float] = []
+
+    def fake_sleep(val):
+        sleep_args.append(val)
+
+    monkeypatch.setattr("time.sleep", lambda val: fake_sleep(val))
+    subjects = harv.harvest_from_web(target_codes=None, allow_full=False, delay=0.1, jitter=0.05)
     assert isinstance(subjects, list)
     assert len(subjects) >= 1
     assert subjects[0].lecture_code == "10000100"
+    # Ensure that sleep has been called at least once and the values respect delay/jitter
+    assert sleep_args, "Expected time.sleep to be called for rate-limiting"
+    assert all(isinstance(x, float) for x in sleep_args)
+    assert all(0 <= x <= 0.2 for x in sleep_args)
+    # Ensure the User-Agent was applied on session and in request headers
+    assert any("MomijiHarvester/" in h.get("User-Agent", "") for h in captured["session_headers"]) or any(
+        "MomijiHarvester/" in h.get("User-Agent", "") for h in captured["request_headers"]
+    )
 
 
 def test_harvest_from_web_full(monkeypatch, tmp_path: Path):

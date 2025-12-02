@@ -1,3 +1,4 @@
+import random
 import time
 from pathlib import Path
 
@@ -36,6 +37,7 @@ class Harvester:
         target_codes: list[str] | None = None,
         allow_full: bool = False,
         delay: float = 0.5,
+        jitter: float = 0.2,
     ) -> list[Subject]:
         """Harvest syllabus pages from the live website.
 
@@ -74,7 +76,8 @@ class Harvester:
                 links = [a.get("href") for a in soup.select("a[href]") if a.get("href")]
                 codes = []
                 for href in links:
-                    m = re.search(r"2025_AA_([0-9]+)\.html$", href)
+                    href_str = str(href)
+                    m = re.search(r"2025_AA_([0-9]+)\.html$", href_str)
                     if m:
                         codes.append(m.group(1))
                 codes = sorted(set(codes))
@@ -88,9 +91,16 @@ class Harvester:
 
         # Setup HTTP session and retry policy
         session = requests.Session()
-        retries = Retry(total=3, backoff_factor=0.5)
+        retries = Retry(
+            total=3,
+            backoff_factor=0.5,
+            status_forcelist=[429, 500, 502, 503, 504],
+            allowed_methods=["GET", "HEAD"],
+        )  # type: ignore[arg-type]
         session.mount("https://", HTTPAdapter(max_retries=retries))
         headers = {"User-Agent": "MomijiHarvester/0.1 (+https://github.com/swawa-yu/MomijiHarvester)"}
+        # Make headers persistent on the session to ensure all requests use the same UA
+        session.headers.update(headers)
 
         for code in codes:
             # Construct URL
@@ -107,7 +117,11 @@ class Harvester:
                     subjects.append(subject)
             except Exception as e:
                 config.logger.exception("Error fetching/parsing %s: %s", url, e)
-            time.sleep(delay)
+            # Respect a base delay between requests and add some jitter to avoid stampeding
+            sleep_time = delay + random.uniform(-jitter, jitter) if jitter else delay
+            if sleep_time < 0:
+                sleep_time = 0
+            time.sleep(sleep_time)
         return subjects
 
     def save_results(self, subjects: list[Subject], output_file: Path) -> None:
