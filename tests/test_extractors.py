@@ -1,4 +1,6 @@
 # tests/test_extractors.py
+import logging
+
 import pytest
 from bs4 import BeautifulSoup
 
@@ -9,7 +11,6 @@ from extractors import (
     validate_headers,
 )
 from models import Subject
-import logging
 
 # --- Test extract_headers ---
 
@@ -81,14 +82,17 @@ def test_extract_subject_data_valid(sample_html_content_aa10000100: str):
     assert subject.term == "1年次生 前期 １ターム"  # 空白に注意
     assert subject.lecture_type == "講義"
     assert subject.lecture_type_detail_1 == "対面, オンライン(オンデマンド型)"  # カンマ区切りで取得される想定
-    assert subject.credits == "2.0"
+    assert isinstance(subject.credits, float)
+    assert subject.credits == 2.0
     assert subject.language == "B : 日本語・英語"
     # media_equipment はリストになるはず
     assert isinstance(subject.media_equipment, list)
     assert "テキスト" in subject.media_equipment
     assert "moodle" in subject.media_equipment
     # keywords の内容確認
-    assert "大学での学び" in subject.keywords if subject.keywords else False
+    # keywords should be a list of strings
+    assert isinstance(subject.keywords, list)
+    assert any("大学での学び" in k for k in subject.keywords)
     # ... 他のフィールドも必要に応じて検証 ...
     assert subject.other is None  # HTMLでは &nbsp;&nbsp; だがクリーニングされるはず
 
