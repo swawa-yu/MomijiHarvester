@@ -1,5 +1,7 @@
 
 from pydantic import AliasChoices, BaseModel, Field
+from pydantic import field_validator, model_validator
+import re
 
 
 class Subject(BaseModel):
@@ -44,7 +46,7 @@ class Subject(BaseModel):
     )
 
     # 時間・単位
-    credits: str | None = Field(None, alias="単位")
+    credits: float | None = Field(None, alias="単位")
     weekly_hours: str | None = Field(None, alias="週時間")
     language: str | None = Field(None, alias="使用言語")
 
@@ -98,6 +100,53 @@ class Subject(BaseModel):
     model_config = {
         "populate_by_name": True,
     }
+
+    # --- Validators ---
+    @field_validator("credits", mode="before")
+    def _parse_credits(cls, v):
+        if v is None:
+            return None
+        if isinstance(v, (int, float)):
+            return float(v)
+        s = str(v)
+        # Normalize Japanese full-width digits etc and parentheses
+        s = s.replace("\xa0", " ")
+        s = s.replace("\u3000", " ")
+        # find first numeric token that looks like a float
+        m = re.search(r"(\d+(?:\.\d+)?)", s)
+        if m:
+            try:
+                return float(m.group(1))
+            except Exception:
+                return None
+        return None
+
+    @field_validator("media_equipment", "learning_methods", "keywords", mode="before")
+    def _ensure_list(cls, v):
+        if v is None:
+            return None
+        # already a list
+        if isinstance(v, list):
+            filtered = [str(i).strip() for i in v if i and str(i).strip()]
+            return filtered if filtered else None
+        # string -> split on common separators
+        s = str(v).strip()
+        if not s:
+            return None
+        # Unified separators
+        for sep in ["、", ",", "，", ";", ";", "／", " / "]:
+            s = s.replace(sep, ",")
+        items = [it.strip() for it in s.split(",") if it.strip()]
+        return items if items else None
+
+    @model_validator(mode="before")
+    def _normalize_empty_strings(cls, values: dict | None):
+        if not values:
+            return values
+        for k, v in list(values.items()):
+            if isinstance(v, str) and not v.strip():
+                values[k] = None
+        return values
 
 
 # End of models.py
