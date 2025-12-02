@@ -1,6 +1,6 @@
 import enum
 from pathlib import Path
-from typing import Annotated, Any
+from typing import Annotated
 
 import typer
 

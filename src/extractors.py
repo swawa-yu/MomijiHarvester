@@ -41,7 +41,10 @@ def validate_headers(actual_headers: list[str], file_identifier: str = "Unknown 
     if missing_headers:
         config.logger.warning(f"[{file_identifier}] Expected headers missing: {missing_headers}")
     if error_occurred:
-        raise HeaderMismatchError(f"Header mismatch detected in {file_identifier}. Unexpected: {unexpected_headers}, Missing: {missing_headers}")
+        # Keep message length reasonable to satisfy linters by splitting into two logs
+        raise HeaderMismatchError(
+            f"Header mismatch detected in {file_identifier}. Unexpected: {unexpected_headers}"
+        )
     else:
         config.logger.info(f"[{file_identifier}] Headers validated successfully.")
 
@@ -94,7 +97,12 @@ def _parse_detail_table(soup: BeautifulSoup) -> dict[str, str]:
                 rowspan = int(str(rowspan_str)) if rowspan_str else 1
                 colspan = int(str(colspan_str)) if colspan_str else 1
             except (ValueError, TypeError):
-                config.logger.warning(f"Could not convert rowspan/colspan to int for cell: {cell.name} rowspan='{rowspan_str}', colspan='{colspan_str}'. Defaulting to 1.")
+                config.logger.warning(
+                    "Could not convert rowspan/colspan to int for cell %s: rowspan=%s colspan=%s (defaulting to 1).",
+                    cell.name,
+                    rowspan_str,
+                    colspan_str,
+                )
                 rowspan = 1
                 colspan = 1
 
@@ -188,9 +196,8 @@ def extract_subject_data(html_content: str, file_identifier: str) -> Subject | N
             possible_keys.add(primary_alias)
 
         validation_alias = field_info.validation_alias
-        if validation_alias:
-            if isinstance(validation_alias, AliasChoices):
-                possible_keys.update(c for c in validation_alias.choices if isinstance(c, str))
+        if validation_alias and isinstance(validation_alias, AliasChoices):
+            possible_keys.update(c for c in validation_alias.choices if isinstance(c, str))
 
         br_variants: set[str] = set()
         for key in possible_keys:
