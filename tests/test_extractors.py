@@ -1,4 +1,6 @@
 # tests/test_extractors.py
+import logging
+
 import pytest
 from bs4 import BeautifulSoup
 
@@ -9,7 +11,6 @@ from extractors import (
     validate_headers,
 )
 from models import Subject
-import logging
 
 # --- Test extract_headers ---
 
@@ -67,6 +68,9 @@ def test_validate_headers_missing(headers_with_missing: list[str], caplog):
 # --- Test extract_subject_data ---
 
 
+EXPECTED_CREDITS = 2
+
+
 def test_extract_subject_data_valid(sample_html_content_aa10000100: str):
     """Test extracting full subject data from a valid sample HTML."""
     subject = extract_subject_data(sample_html_content_aa10000100, "AA10000100")
@@ -81,16 +85,20 @@ def test_extract_subject_data_valid(sample_html_content_aa10000100: str):
     assert subject.term == "1年次生 前期 １ターム"  # 空白に注意
     assert subject.lecture_type == "講義"
     assert subject.lecture_type_detail_1 == "対面, オンライン(オンデマンド型)"  # カンマ区切りで取得される想定
-    assert subject.credits == "2.0"
+    assert isinstance(subject.credits, int)
+    assert subject.credits == EXPECTED_CREDITS
     assert subject.language == "B : 日本語・英語"
-    # media_equipment はリストになるはず
-    assert isinstance(subject.media_equipment, list)
+    # media_equipment is stored as a string now — check for substrings
+    assert isinstance(subject.media_equipment, str)
     assert "テキスト" in subject.media_equipment
     assert "moodle" in subject.media_equipment
-    # keywords の内容確認
-    assert "大学での学び" in subject.keywords if subject.keywords else False
+    # keywords should be a comma-separated string; check for substrings
+    assert isinstance(subject.keywords, str)
+    assert "大学での学び" in subject.keywords
     # ... 他のフィールドも必要に応じて検証 ...
-    assert subject.other is None  # HTMLでは &nbsp;&nbsp; だがクリーニングされるはず
+    # With the current model, `other` is a required string field; empty or &nbsp; should
+    # normalize to an empty string rather than None.
+    assert subject.other == ""
 
 
 def test_extract_subject_data_invalid_html():
@@ -126,4 +134,12 @@ def test_extract_subject_data_header_mismatch(sample_html_content_aa10000100: st
     # )
     # subject = extract_subject_data(temp_html, "header_mismatch_test")
     # assert subject is None
-    pass  # 個別の validate_headers テストでカバー
+    # Modify the HTML to cause a header mismatch: change "年度" to an unexpected header
+    temp_html = sample_html_content_aa10000100.replace(
+        '<TH class="detail-head" align="center" width="150">年度</TH>',
+        '<TH class="detail-head" align="center" width="150">間違った年度</TH>',
+    )
+    import pytest
+
+    with pytest.raises(HeaderMismatchError):
+        extract_subject_data(temp_html, "header_mismatch_test")

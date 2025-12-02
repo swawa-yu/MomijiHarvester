@@ -15,6 +15,7 @@ class Settings:
         self.local_html_dir_full: Path = Path(config.LOCAL_HTML_DIR_FULL)
         self.local_html_dir_small: Path = Path(config.LOCAL_HTML_DIR_SMALL)
         self.live_small_codes: list[str] | None = None
+        # (No additional settings for fractional credits; model validation enforces integer credits.)
 
 
 def get_settings(env_file: str | Path | None = None) -> Settings:

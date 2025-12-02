@@ -34,13 +34,41 @@ class Harvester:
     def save_results(self, subjects: list[Subject], output_file: Path) -> None:
         # Write JSON and CSV files
         # model_dump returns serialized dictionaries for Pydantic v2 models
-        df = pd.DataFrame([s.model_dump() for s in subjects])
+        # Ensure final JSON preserves historical data formats: cast credits to integer
+        # when they represent whole numbers, to maintain compatibility with existing
+        # downstream consumers that expect integers.
+        serialized = []
+        for s in subjects:
+            d = s.model_dump()
+            if "credits" in d and d.get("credits") is not None:
+                try:
+                    v = d["credits"]
+                    # For backward compatibility with historical JSON, keep credits
+                    # as string formatted with one decimal place ("2.0", "3.5", etc.).
+                    try:
+                        fv = float(v)
+                        # If fractional (not integer), keep float; otherwise cast to int
+                        if abs(fv - round(fv)) > 1e-8:
+                            # Fractional credits; store as float (consistent typed JSON)
+                            d["credits"] = float(fv)
+                        else:
+                            # Whole number: store as int to match strict-typed JSON
+                            d["credits"] = int(round(fv))
+                    except Exception:
+                        # If it's not a number, leave original value as-is
+                        d["credits"] = v
+                except Exception:
+                    # If anything unexpected happens, leave it as-is
+                    pass
+            # Remove keys that are None only (keep empty strings; required fields
+            # must exist as empty strings if no value was present).
+            cleaned = {k: v for k, v in d.items() if v is not None}
+            serialized.append(cleaned)
+        df = pd.DataFrame(serialized)
+        # At this point, models enforce integer credits; serialized values should be int for credits
         output_file.parent.mkdir(parents=True, exist_ok=True)
         df.to_json(output_file, orient="records", force_ascii=False, indent=2)
         csv_path = output_file.with_suffix('.csv')
-        # Use to_csv for CSV; convert list fields into joined strings
+        # Use to_csv for CSV; all fields are strings or ints now
         df2 = df.copy()
-        for c in df2.columns:
-            if df2[c].apply(lambda x: isinstance(x, list)).any():
-                df2[c] = df2[c].apply(lambda x: ', '.join(x) if isinstance(x, list) else x)
         df2.to_csv(csv_path, index=False)

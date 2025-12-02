@@ -130,3 +130,51 @@ def headers_with_order_mismatch(valid_headers: list[str]) -> list[str]:
     headers = valid_headers.copy()
     headers[0], headers[1] = headers[1], headers[0]  # 年度と開講部局を入れ替え
     return headers
+
+
+@pytest.fixture
+def minimal_subject_data() -> dict:
+    """Return a minimal valid subject data dict containing all required fields.
+    This helps tests instantiate Subjects without repeating all fields in each test.
+    """
+    return {
+        "年度": "2025年度",
+        "開講部局": "文学部",
+        "講義コード": "10000100",
+        "科目区分": "選択",
+        "授業科目名": "テスト科目",
+        "授業科目名（フリガナ）": "",
+        "英文授業科目名": "Test Subject",
+        "担当教員名": "林 光緒",
+        "担当教員名(フリガナ)": "",
+        "開講キャンパス": "東広島",
+        "開設期": "前期",
+        "曜日・時限・講義室": "",
+        "授業の方法": "講義",
+        "授業の方法【詳細情報】": "",
+        "単位": 2,
+        "週時間": 2,
+        "使用言語": "日本語",
+        "学習の段階": "",
+        "学問分野（分野）": "",
+        "学問分野（分科）": "",
+        "対象学生": "",
+        "授業のキーワード": "",
+        "教職専門科目": "",
+        "教科専門科目": "",
+        "教養教育でのこの授業の位置づけ": "",
+        "学習の成果": "",
+        "授業の目標・概要等": "",
+        "授業計画": "",
+        "教科書・参考書等": "",
+        "授業で使用するメディア・機器等": "",
+        "【詳細情報】": "",
+        "授業で取り入れる学習手法": "",
+        "予習・復習へのアドバイス": "",
+        "履修上の注意受講条件等": "",
+        "成績評価の基準等": "",
+        "実務経験": "",
+        "実務経験の概要とそれに基づく授業内容": "",
+        "メッセージ": "",
+        "その他": "",
+    }

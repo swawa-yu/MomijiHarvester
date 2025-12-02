@@ -1,5 +1,7 @@
 
-from pydantic import AliasChoices, BaseModel, Field
+import re
+
+from pydantic import AliasChoices, BaseModel, Field, field_validator, model_validator
 
 
 class Subject(BaseModel):
@@ -10,29 +12,29 @@ class Subject(BaseModel):
     """
 
     # 基本情報
-    year: str | None = Field(None, alias="年度")
-    faculty: str | None = Field(None, alias="開講部局")
-    lecture_code: str | None = Field(None, alias="講義コード")
-    category: str | None = Field(None, alias="科目区分")
-    subject_name: str | None = Field(None, alias="授業科目名")
+    year: str = Field(..., alias="年度")
+    faculty: str = Field(..., alias="開講部局")
+    lecture_code: str = Field(..., alias="講義コード")
+    category: str = Field(..., alias="科目区分")
+    subject_name: str = Field(..., alias="授業科目名")
     subject_name_kana: str | None = Field(
         None,
         alias="授業科目名（フリガナ）",
         validation_alias=AliasChoices("授業科目名（フリガナ）", "授業科目名 （フリガナ）"),
     )
-    english_subject_name: str | None = Field(None, alias="英文授業科目名")
-    instructor_name: str | None = Field(None, alias="担当教員名")
+    english_subject_name: str = Field(..., alias="英文授業科目名")
+    instructor_name: str = Field(..., alias="担当教員名")
     instructor_name_kana: str | None = Field(
         None,
         alias="担当教員名(フリガナ)",
         validation_alias=AliasChoices("担当教員名(フリガナ)", "担当教員名 (フリガナ)"),
     )
-    campus: str | None = Field(None, alias="開講キャンパス")
-    term: str | None = Field(None, alias="開設期")
-    day_time_room: str | None = Field(None, alias="曜日・時限・講義室")
+    campus: str = Field(..., alias="開講キャンパス")
+    term: str = Field(..., alias="開設期")
+    day_time_room: str = Field(..., alias="曜日・時限・講義室")
 
     # 授業の方法関連
-    lecture_type: str | None = Field(None, alias="授業の方法")
+    lecture_type: str = Field(..., alias="授業の方法")
     lecture_type_detail_1: str | None = Field(
         None,
         alias="授業の方法【詳細情報】",
@@ -44,60 +46,130 @@ class Subject(BaseModel):
     )
 
     # 時間・単位
-    credits: str | None = Field(None, alias="単位")
-    weekly_hours: str | None = Field(None, alias="週時間")
-    language: str | None = Field(None, alias="使用言語")
+    credits: int = Field(..., alias="単位")
+    weekly_hours: int = Field(..., alias="週時間")
+    language: str = Field(..., alias="使用言語")
 
     # 分野/対象
-    learning_stage: str | None = Field(None, alias="学習の段階")
-    discipline_field: str | None = Field(None, alias="学問分野（分野）")
-    discipline_subfield: str | None = Field(None, alias="学問分野（分科）")
-    target_students: str | None = Field(None, alias="対象学生")
+    learning_stage: str = Field(..., alias="学習の段階")
+    discipline_field: str = Field(..., alias="学問分野（分野）")
+    discipline_subfield: str = Field(..., alias="学問分野（分科）")
+    target_students: str = Field(..., alias="対象学生")
 
     # メタ情報
-    keywords: list[str] | None = Field(None, alias="授業のキーワード")
-    teacher_professional: str | None = Field(None, alias="教職専門科目")
-    subject_professional: str | None = Field(None, alias="教科専門科目")
-    liberal_education_position: str | None = Field(
-        None,
+    keywords: str = Field(..., alias="授業のキーワード")
+    teacher_professional: str = Field(..., alias="教職専門科目")
+    subject_professional: str = Field(..., alias="教科専門科目")
+    liberal_education_position: str = Field(
+        ...,
         alias="教養教育でのこの授業の位置づけ",
         validation_alias=AliasChoices("教養教育でのこの授業の位置づけ", "教養教育での\n この授業の位置づけ"),
     )
 
     # 文章長めのフィールド
-    learning_outcomes: str | None = Field(None, alias="学習の成果")
-    overview: str | None = Field(None, alias="授業の目標・概要等")
-    plan: str | None = Field(None, alias="授業計画")
-    textbooks: str | None = Field(None, alias="教科書・参考書等")
+    learning_outcomes: str = Field(..., alias="学習の成果")
+    overview: str = Field(..., alias="授業の目標・概要等")
+    plan: str = Field(..., alias="授業計画")
+    textbooks: str = Field(..., alias="教科書・参考書等")
 
     # メディア・機器
-    media_equipment: list[str] | None = Field(
-        None,
+    media_equipment: str = Field(
+        ...,
         alias="授業で使用するメディア・機器等",
         validation_alias=AliasChoices("授業で使用するメディア・機器等", "授業で使用する メディア・機器等"),
     )
-    media_equipment_detail: str | None = Field(None, alias="【詳細情報】")
+    media_equipment_detail: str = Field(..., alias="【詳細情報】")
 
     # 学習手法/アドバイス
-    learning_methods: list[str] | None = Field(None, alias="授業で取り入れる学習手法")
-    advice: str | None = Field(None, alias="予習・復習へのアドバイス")
-    enrollment_notes: str | None = Field(
-        None,
+    learning_methods: str = Field(..., alias="授業で取り入れる学習手法")
+    advice: str = Field(..., alias="予習・復習へのアドバイス")
+    enrollment_notes: str = Field(
+        ...,
         alias="履修上の注意受講条件等",
         validation_alias=AliasChoices("履修上の注意受講条件等", "履修上の注意<BR> 受講条件等"),
     )
-    grading: str | None = Field(None, alias="成績評価の基準等")
+    grading: str = Field(..., alias="成績評価の基準等")
 
     # 実務経験/その他
-    practical_experience: str | None = Field(None, alias="実務経験")
-    practical_experience_detail: str | None = Field(None, alias="実務経験の概要とそれに基づく授業内容")
-    message: str | None = Field(None, alias="メッセージ")
-    other: str | None = Field(None, alias="その他")
+    practical_experience: str = Field(..., alias="実務経験")
+    practical_experience_detail: str = Field(..., alias="実務経験の概要とそれに基づく授業内容")
+    message: str = Field(..., alias="メッセージ")
+    other: str = Field(..., alias="その他")
 
     # Pydantic v2 configuration
     model_config = {
         "populate_by_name": True,
     }
+
+    # --- Validators ---
+    @field_validator("credits", mode="before")
+    def _parse_credits(cls, v):
+        if v is None:
+            return None
+        if isinstance(v, (int, float)):
+            if isinstance(v, float) and not float(v).is_integer():
+                raise ValueError("credits must be integer; fractional value detected")
+            return int(v)
+        s = str(v)
+        # Normalize Japanese full-width digits etc and parentheses
+        s = s.replace("\xa0", " ")
+        s = s.replace("\u3000", " ")
+        # find first numeric token that looks like a float
+        m = re.search(r"(\d+(?:\.\d+)?)", s)
+        if m:
+            try:
+                fv = float(m.group(1))
+                if not fv.is_integer():
+                    raise ValueError("credits must be integer; fractional value detected")
+                return int(round(fv))
+            except Exception:
+                return None
+        return None
+
+    @field_validator("media_equipment", "learning_methods", "keywords", mode="before")
+    def _normalize_joined_str(cls, v):
+        """Normalize incoming values to a comma-separated string.
+
+        Accepts list or string inputs and returns a string. An empty or
+        whitespace-only value is normalized to the empty string.
+        """
+        if v is None:
+            return ""
+        if isinstance(v, list):
+            items = [str(i).strip() for i in v if i and str(i).strip()]
+            return ", ".join(items)
+        s = str(v).strip()
+        if not s:
+            return ""
+        # Unified separators -> convert to single ", " separated string
+        for sep in ["、", "，", ";", "／", " / "]:
+            s = s.replace(sep, ",")
+        parts = [p.strip() for p in s.split(",") if p.strip()]
+        return ", ".join(parts)
+
+    @field_validator("weekly_hours", mode="before")
+    def _parse_weekly_hours(cls, v):
+        if v is None:
+            return None
+        try:
+            if isinstance(v, int):
+                return v
+            val = float(str(v))
+            if not val.is_integer():
+                raise ValueError("weekly_hours must be integer; fractional value detected")
+            return int(round(val))
+        except Exception:
+            # Not parseable; return None so validation later can catch it
+            raise ValueError("weekly_hours must be an integer or integer-like string")
+
+    @model_validator(mode="before")
+    def _normalize_empty_strings(cls, values: dict | None):
+        if not values:
+            return values
+        for k, v in list(values.items()):
+            if isinstance(v, str) and not v.strip():
+                values[k] = ""
+        return values
 
 
 # End of models.py

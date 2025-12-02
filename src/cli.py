@@ -54,6 +54,7 @@ def main(
         harv = Harvester(app_settings)
         subjects = []
 
+        # No config flag for fractional credits; model validation enforces integer credits
         # --- ロギング開始 ---
         # config.py で定義されたロガーを使う想定
         config.logger.info(f"Starting harvester in {mode.value} mode.")
