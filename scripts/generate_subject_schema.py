@@ -38,7 +38,7 @@ def generate_markdown_schema(out_dir: Path, schema):
     with md_path.open("w", encoding="utf-8") as f:
         f.write("# Subject JSON Schema\n\n")
         f.write("This document lists the `Subject` model field names, their JSON types, and a short description.\n\n")
-        f.write("| field (alias) | JSON type | required | description |\n")
+        f.write("| field (alias) | JSON type | description |\n")
         f.write("|---|---|---:|---|\n")
         # Use the pydantic model fields when possible to preserve ordering
         try:
@@ -47,17 +47,18 @@ def generate_markdown_schema(out_dir: Path, schema):
         except Exception:
             fields = {}
         props = schema.get("properties", {})
+        # `required` field is intentionally omitted from the markdown as all
+        # fields are required; adding a column would be noisy.
         required_list = schema.get("required", [])
         for model_field_name, info in fields.items():
             # info is pydantic FieldInfo; fetch alias and annotation
             alias = getattr(info, "alias", model_field_name)
             json_spec = props.get(alias, {})
             json_type = json_spec.get("type", "")
-            is_required = "Yes" if alias in required_list else "No"
             description = json_spec.get("title", "")
             if isinstance(description, str):
                 description = description.replace("\n", " ")
-            f.write(f"| `{alias}` | {json_type} | {is_required} | {description} |\n")
+            f.write(f"| `{alias}` | {json_type} | {description} |\n")
     return md_path
 
 
