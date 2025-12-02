@@ -9,6 +9,7 @@ from extractors import (
     validate_headers,
 )
 from models import Subject
+import logging
 
 # --- Test extract_headers ---
 
@@ -98,6 +99,16 @@ def test_extract_subject_data_invalid_html():
     subject = extract_subject_data(invalid_html, "invalid_html_test")
     # ヘッダー検証で失敗するか、テーブルが見つからず None が返るはず
     assert subject is None
+
+
+def test_extract_subject_data_index_page(sample_html_content_index: str, caplog):
+    """Index pages without detail tables should be skipped without ERROR logs."""
+    caplog.set_level(logging.INFO)
+    subject = extract_subject_data(sample_html_content_index, "index_test")
+    assert subject is None
+    # Ensure no ERROR logs were emitted for missing detail table
+    assert "Detail table not found or is not a Tag in HTML." not in caplog.text
+    assert "ERROR" not in caplog.text
 
 
 def test_extract_subject_data_header_mismatch(sample_html_content_aa10000100: str):

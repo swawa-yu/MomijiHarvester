@@ -17,7 +17,11 @@ class HeaderMismatchError(ValueError):
 def extract_headers(soup: BeautifulSoup) -> list[str]:
     """HTMLスープからヘッダーテキストのリストを抽出する"""
     headers = []
-    th_tags = soup.select("table > tbody > tr > th.detail-head")
+    # Find the detail table first then extract headers from within it.
+    table = soup.select_one("body > blockquote > table:nth-of-type(2)")
+    if not table:
+        return headers
+    th_tags = table.select("th.detail-head")
     for th in th_tags:
         if isinstance(th, Tag):
             header_text = " ".join(th.get_text(strip=True).split())
@@ -57,7 +61,9 @@ def _parse_detail_table(soup: BeautifulSoup) -> dict[str, str]:
     data_dict: dict[str, str] = {}
     table = soup.select_one("body > blockquote > table:nth-of-type(2)")
     if not table or not isinstance(table, Tag):
-        config.logger.error("Detail table not found or is not a Tag in HTML.")
+        # Not an error by itself — many HTML pages are index pages without the detail table.
+        # Use debug log level to avoid alarming users and cluttering logs.
+        config.logger.debug("Detail table not found or is not a Tag in HTML. Skipping parse.")
         return data_dict
 
     # Find all rows (allow tbody wrapper added by parser)
@@ -165,6 +171,14 @@ def extract_subject_data(html_content: str, file_identifier: str) -> Subject | N
     ヘッダー検証を含む。
     """
     soup = BeautifulSoup(html_content, "html5lib")
+
+    # --- Find detail table first; if absent, skip early to avoid spurious header warnings ---
+    detail_table = soup.select_one("body > blockquote > table:nth-of-type(2)")
+    if not detail_table or not isinstance(detail_table, Tag):
+        # Index pages often do not include the detail table; this is expected.
+        # Log at INFO and gracefully skip extraction for these pages.
+        config.logger.info(f"[{file_identifier}] No detail table found; skipping subject extraction.")
+        return None
 
     try:
         actual_headers = extract_headers(soup)

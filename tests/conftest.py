@@ -39,6 +39,19 @@ def sample_html_content_aa10000100() -> str:
 
 
 @pytest.fixture(scope="module")
+def sample_html_content_index() -> str:
+    """Content of index.html sample (small)."""
+    file_path = HTML_DIR_SMALL / "index.html"
+    if not file_path.is_file():
+        pytest.skip(f"Sample HTML file not found: {file_path}")
+    try:
+        return file_path.read_text(encoding="utf-8")
+    except Exception as e:
+        pytest.fail(f"Failed to read sample HTML file {file_path}: {e}")
+    return ""
+
+
+@pytest.fixture(scope="module")
 def sample_soup_aa10000100(sample_html_content_aa10000100: str) -> BeautifulSoup:
     """BeautifulSoup object for a specific sample HTML file (small)."""
     return BeautifulSoup(sample_html_content_aa10000100, "html5lib")
