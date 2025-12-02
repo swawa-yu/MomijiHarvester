@@ -1,7 +1,7 @@
 
-from pydantic import AliasChoices, BaseModel, Field
-from pydantic import field_validator, model_validator
 import re
+
+from pydantic import AliasChoices, BaseModel, Field, field_validator, model_validator
 
 
 class Subject(BaseModel):
