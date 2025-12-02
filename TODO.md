@@ -10,9 +10,6 @@
   - テストではなく実行時にチェックする
 - test_credits_parsing_variants() が意味不明。不必要に対応を増やしている。読むHTMLに合った形に対応していればよい。
 - ruffなどで必要以上に許容しないようにする
-- null(None)を許容しないようにする。
-  - jsonに対して""がないかをチェックするスクリプトを用意する。
-- pre-commitの導入  (完了)
-- required Yes は全てそうなんだからわざわざ書かない  (対応済み: `schema` Markdown から削除)
 - has_null()の存在意義
-- pre-commitはまだ動いていない
+- 不必要に複雑な状態を改善
+  - parse_credits()

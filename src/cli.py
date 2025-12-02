@@ -81,10 +81,11 @@ def main(
             if not app_settings.live_small_codes:
                 config.logger.error("live_small_codes is not defined in settings.")
                 raise typer.Exit(code=1)
-            subjects = harv.harvest_from_web(target_codes=app_settings.live_small_codes)
+            subjects = harv.harvest_from_web(target_codes=app_settings.live_small_codes, allow_full=False)
         elif mode == RunMode.LIVE_FULL:
-            # 全件取得ロジックは harvester 側で実装する想定
-            subjects = harv.harvest_from_web(target_codes=None)
+            # FULL harvest will only run if allow_full is True; this is explicit
+            # to avoid accidental full-site scraping (which can be heavy).
+            subjects = harv.harvest_from_web(target_codes=None, allow_full=True)
 
         # --- 結果の保存 ---
         if subjects:

@@ -13,7 +13,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=7.0", "ruff", "mypy>=1.0"]
+dev = ["pytest>=7.0", "ruff", "mypy>=1.0", "types-requests"]
 perf = ["numba"]
 docs = ["sphinx"]
 
