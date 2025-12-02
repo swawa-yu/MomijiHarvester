@@ -8,35 +8,44 @@
 
 少量ケースでの試行と本番環境での実行を切り替えられるように設計されています。
 
-## セットアップ
+## セットアップ (Quick Start)
 
-1.  このリポジトリをクローンします。
-    ```bash
-    git clone <リポジトリのURL>
-    cd MomijiHarvester
-    ```
-2.  依存関係をインストールします。`uv` がインストールされている必要があります。
-    ```bash
-    uv pip install .
-    ```
+1. このリポジトリをクローンします。
+
+```bash
+git clone <リポジトリのURL>
+cd MomijiHarvester
+```
+
+2. Python 開発用依存関係をインストールします（仮想環境推奨）。
+
+```bash
+# dev環境で必要な依存も含めてインストール
+python -m pip install -e .[dev]
+```
+
+注: このプロジェクトは Python 3.11 以上で動作するように構成されています。
 
 ## 使用方法
 
 本ツールはコマンドラインから実行します。実行時にモードを指定することで、処理対象の講義コードリストを切り替えることができます。
 
 ```bash
-python -m src.main --mode <mode>
+python -m src.cli --mode <mode>
 ```
 
 `<mode>` には以下のいずれかを指定します。
 
-*   `small`: 設定ファイル (`config.yaml`) の `small_lecture_codes` に記述された講義コードのみを処理します。開発や少量のデータでの試行に使用します。
-*   `full`: 設定ファイル (`config.yaml`) の `full_lecture_codes` に記述された講義コードを処理します。現時点では `full_lecture_codes` は空リストとしていますが、全ての講義コードを取得する機能が実装され次第、ここに記述された講義コードが処理されます。
+* `local-small`: `tests/fixtures/html/small` にあるサンプル HTML を対象に小規模実行を行います。開発や少量のデータでの試行に使用します。
+* `local-full`: ローカルにある全 HTML を対象に実行します（`src/settings.py` にある `local_html_dir_full` を参照）。
+* `live-small`: 少量の講義コードでライブサイト (`momiji.hiroshima-u.ac.jp`) を取得して実行するためのモード (事前に `src/settings.py` の `live_small_codes` を編集して、対象の講義コードを設定してください)。
+* `live-full`: ライブサイトから全件取得して実行するモード（未実装/リスクあり：サイトへの影響や取得ロジックの追加が必要です）。
 
 ### 設定ファイル (`config.yaml`)
 
 プロジェクトのルートディレクトリにある `config.yaml` ファイルで、各モードで処理する講義コードリストを管理します。
 
+# 設定ファイルの位置: `config.yaml` を使えますが、現在の実装では `src/settings.py` の設定が優先されます。
 ```yaml
 # MomijiHarvester Configuration
 
@@ -51,21 +60,33 @@ full_lecture_codes:
   # - "..."
 ```
 
-必要に応じて `small_lecture_codes` に講義コードを追加してください。
+必要に応じて `small_lecture_codes` に講義コードを追加してください。ライブ（`live-small`）を使う場合は `src/settings.py` に `live_small_codes` を設定するか、このモードを実行する前に `src/settings.py` を編集してください。
 
 ## 出力ファイル
 
 実行結果は `output/` ディレクトリに以下のファイルとして出力されます。
 
-*   `output/syllabus_data.csv`: 抽出されたシラバス情報がCSV形式で保存されます。
-*   `output/syllabus_data.json`: 抽出されたシラバス情報がJSON形式で保存されます。
+* `output/syllabus_data.csv`: 抽出されたシラバス情報がCSV形式で保存されます。
+* `output/syllabus_data.json`: 抽出されたシラバス情報がJSON形式で保存されます。
 
-## 今後の課題
+CLI の例:
 
-*   全ての講義コードを自動的に取得する方法の実装。
-*   年度や学科コードを動的に設定できるようにする。
-*   URLからHTMLを取得する機能に関するテストコードの追加。
-*   HTML構造の変更に対する堅牢性の向上。
+```bash
+# ローカルのサンプルHTMLからスモール実行
+python -m src.cli --mode local-small --local-dir tests/fixtures/html/small --output output/test_output.json
+
+# 保存されるのは output ディレクトリ下の JSON と CSV
+```
+
+注: `live-small` / `live-full` はライブ取得に依存するため、用途と負荷について慎重に利用してください。
+
+## 今後の課題 / TODO
+
+* 全ての講義コードを自動的に取得する方法の実装 (full/live対応)
+* 年度や学科コードを動的に設定できるようにする
+* `harvest_from_web` の安定化（リトライ/タイムアウト/バックオフ、並列取得など）
+* 設定周りの強化（`.env` あるいは `pydantic-settings` の導入）
+* HTML 構造の変更に対する堅牢性の向上と追加の E2E テスト
 
 ## ライセンス
 
