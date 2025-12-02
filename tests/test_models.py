@@ -1,13 +1,13 @@
-import pytest
-
 from models import Subject
+
+EXPECTED_CREDITS = 2.0
 
 
 def test_credits_parsing_variants():
-    assert Subject(credits="2.0").credits == 2.0
-    assert Subject(credits="2").credits == 2.0
-    assert Subject(credits=2).credits == 2.0
-    assert Subject(credits="(2)").credits == 2.0
+    assert Subject(credits="2.0").credits == EXPECTED_CREDITS
+    assert Subject(credits="2").credits == EXPECTED_CREDITS
+    assert Subject(credits=2).credits == EXPECTED_CREDITS
+    assert Subject(credits="(2)").credits == EXPECTED_CREDITS
 
 
 def test_list_field_parsing():

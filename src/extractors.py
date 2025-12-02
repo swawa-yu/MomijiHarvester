@@ -16,7 +16,7 @@ class HeaderMismatchError(ValueError):
 
 def extract_headers(soup: BeautifulSoup) -> list[str]:
     """HTMLスープからヘッダーテキストのリストを抽出する"""
-    headers = []
+    headers: list[str] = []
     # Find the detail table first then extract headers from within it.
     table = soup.select_one("body > blockquote > table:nth-of-type(2)")
     if not table:
@@ -53,11 +53,8 @@ def validate_headers(actual_headers: list[str], file_identifier: str = "Unknown 
         config.logger.info(f"[{file_identifier}] Headers validated successfully.")
 
 
-def _parse_detail_table(soup: BeautifulSoup) -> dict[str, str]:
-    """
-    シラバス詳細テーブルを解析し、ヘッダーとデータの辞書を作成する。
-    rowspanを考慮する。
-    """
+def _parse_detail_table(soup: BeautifulSoup) -> dict[str, str]:  # noqa: PLR0912, PLR0915
+    """シラバス詳細テーブルを解析し、ヘッダーとデータの辞書を作成する。rowspanを考慮する。"""
     data_dict: dict[str, str] = {}
     table = soup.select_one("body > blockquote > table:nth-of-type(2)")
     if not table or not isinstance(table, Tag):
@@ -165,11 +162,8 @@ def _split_list_value(value: str | None) -> list[str] | None:
     return items if items else None
 
 
-def extract_subject_data(html_content: str, file_identifier: str) -> Subject | None:
-    """
-    HTMLコンテンツ文字列から Subject モデルのデータを抽出する。
-    ヘッダー検証を含む。
-    """
+def extract_subject_data(html_content: str, file_identifier: str) -> Subject | None:  # noqa: PLR0911, PLR0912, PLR0915
+    """HTMLコンテンツ文字列から Subject モデルのデータを抽出する。ヘッダー検証を含む。"""
     soup = BeautifulSoup(html_content, "html5lib")
 
     # --- Find detail table first; if absent, skip early to avoid spurious header warnings ---

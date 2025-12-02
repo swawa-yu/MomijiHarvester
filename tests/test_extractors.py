@@ -68,6 +68,9 @@ def test_validate_headers_missing(headers_with_missing: list[str], caplog):
 # --- Test extract_subject_data ---
 
 
+EXPECTED_CREDITS = 2.0
+
+
 def test_extract_subject_data_valid(sample_html_content_aa10000100: str):
     """Test extracting full subject data from a valid sample HTML."""
     subject = extract_subject_data(sample_html_content_aa10000100, "AA10000100")
@@ -83,7 +86,7 @@ def test_extract_subject_data_valid(sample_html_content_aa10000100: str):
     assert subject.lecture_type == "講義"
     assert subject.lecture_type_detail_1 == "対面, オンライン(オンデマンド型)"  # カンマ区切りで取得される想定
     assert isinstance(subject.credits, float)
-    assert subject.credits == 2.0
+    assert subject.credits == EXPECTED_CREDITS
     assert subject.language == "B : 日本語・英語"
     # media_equipment はリストになるはず
     assert isinstance(subject.media_equipment, list)

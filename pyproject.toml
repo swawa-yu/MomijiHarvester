@@ -42,7 +42,7 @@ select = [
     "RUF", # Ruff-specific rules
 ]
 ignore = ["E501"] # line-length is handled by the formatter
-extend-ignore = ["RUF001"]  # Allow full-width characters in Japanese strings (allowed in this project)
+extend-ignore = ["RUF001", "RUF002", "RUF003"]  # Allow full-width characters in Japanese strings (allowed in this project)
 
 [tool.ruff.format]
 quote-style = "double"
