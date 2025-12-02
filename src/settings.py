@@ -15,9 +15,7 @@ class Settings:
         self.local_html_dir_full: Path = Path(config.LOCAL_HTML_DIR_FULL)
         self.local_html_dir_small: Path = Path(config.LOCAL_HTML_DIR_SMALL)
         self.live_small_codes: list[str] | None = None
-        # Controls whether a fractional credit (e.g. 0.5 or 1.5) should cause a hard failure
-        # when creating final JSON/CSV outputs. Default false -> warn and emit an issues file.
-        self.fail_on_fractional_credits: bool = False
+        # (No additional settings for fractional credits; model validation enforces integer credits.)
 
 
 def get_settings(env_file: str | Path | None = None) -> Settings:

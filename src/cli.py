@@ -34,7 +34,6 @@ def main(
     output_file: Annotated[Path, typer.Option("--output", "-o", help="Output JSON file path.")] = Path(
         "output/syllabus_data.json"
     ),
-    fail_on_fractional_credits: Annotated[bool, typer.Option("--fail-on-fractional-credits", help="Fail if fractional credits are detected (e.g., 1.5)")] = False,
     config_file: Annotated[
         Path | None, typer.Option("--config", help="Path to configuration file (e.g., .env).")
     ] = None,
@@ -55,7 +54,7 @@ def main(
         harv = Harvester(app_settings)
         subjects = []
 
-        app_settings.fail_on_fractional_credits = fail_on_fractional_credits
+        # No config flag for fractional credits; model validation enforces integer credits
         # --- ロギング開始 ---
         # config.py で定義されたロガーを使う想定
         config.logger.info(f"Starting harvester in {mode.value} mode.")
