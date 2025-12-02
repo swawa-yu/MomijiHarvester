@@ -53,6 +53,13 @@ line-ending = "lf"
 [tool.mypy]
 strict = true
 
+[tool.black]
+line-length = 119
+
+[tool.isort]
+profile = "black"
+line_length = 119
+
 [tool.pytest.ini_options]
 minversion = "7.0"
 addopts = "-ra -q --import-mode=importlib"

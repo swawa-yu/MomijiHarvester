@@ -29,13 +29,18 @@ app = typer.Typer(help="MomijiHarvester: Hiroshima University Syllabus Scraper C
 def main(
     mode: Annotated[RunMode, typer.Option("--mode", "-m", help="Execution mode.")] = RunMode.LOCAL_SMALL,
     local_dir: Annotated[
-        Path | None, typer.Option("--local-dir", help="Directory containing local HTML files (for local modes).")
+        Path | None,
+        typer.Option(
+            "--local-dir",
+            help="Directory containing local HTML files (for local modes).",
+        ),
     ] = None,
     output_file: Annotated[Path, typer.Option("--output", "-o", help="Output JSON file path.")] = Path(
         "output/syllabus_data.json"
     ),
     config_file: Annotated[
-        Path | None, typer.Option("--config", help="Path to configuration file (e.g., .env).")
+        Path | None,
+        typer.Option("--config", help="Path to configuration file (e.g., .env)."),
     ] = None,
 ):
     """

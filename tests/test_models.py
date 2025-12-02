@@ -1,4 +1,5 @@
 import pytest
+
 from models import Subject
 
 EXPECTED_CREDITS = 2

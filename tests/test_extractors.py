@@ -4,12 +4,7 @@ import logging
 import pytest
 from bs4 import BeautifulSoup
 
-from extractors import (
-    HeaderMismatchError,
-    extract_headers,
-    extract_subject_data,
-    validate_headers,
-)
+from extractors import HeaderMismatchError, extract_headers, extract_subject_data, validate_headers
 from models import Subject
 
 # --- Test extract_headers ---
