@@ -60,7 +60,9 @@ class Harvester:
                 except Exception:
                     # If anything unexpected happens, leave it as-is
                     pass
-            serialized.append(d)
+            # Remove keys that are None or empty string to avoid nulls/empty strings in output
+            cleaned = {k: v for k, v in d.items() if v is not None and not (isinstance(v, str) and v.strip() == "")}
+            serialized.append(cleaned)
         df = pd.DataFrame(serialized)
         # At this point, models enforce integer credits; serialized values should be int for credits
         output_file.parent.mkdir(parents=True, exist_ok=True)

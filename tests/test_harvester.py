@@ -1,5 +1,6 @@
 from pathlib import Path
 import json
+from scripts.validate_json_no_nulls import has_null_or_empty
 
 from harvester import Harvester
 from settings import get_settings
@@ -39,3 +40,6 @@ def test_harvest_skips_invalid_subjects(tmp_path: Path):
     out = tmp_path / "test_output_valid.json"
     harv.save_results(subjects, out)
     assert out.exists()
+    # Ensure output JSON does not contain nulls or empty strings
+    data = json.loads(out.read_text(encoding="utf-8"))
+    assert all(not has_null_or_empty(rec) for rec in data)
