@@ -47,8 +47,13 @@ class Harvester:
                     # as string formatted with one decimal place ("2.0", "3.5", etc.).
                     try:
                         fv = float(v)
-                        # Format with one decimal to match historical representation
-                        d["credits"] = f"{fv:.1f}"
+                        # If fractional (not integer), keep float; otherwise cast to int
+                        if abs(fv - round(fv)) > 1e-8:
+                            # Fractional credits; store as float (consistent typed JSON)
+                            d["credits"] = float(fv)
+                        else:
+                            # Whole number: store as int to match strict-typed JSON
+                            d["credits"] = int(round(fv))
                     except Exception:
                         # If it's not a number, leave original value as-is
                         d["credits"] = v
@@ -57,6 +62,21 @@ class Harvester:
                     pass
             serialized.append(d)
         df = pd.DataFrame(serialized)
+        # Find fractional credits and optionally fail
+        fractional_issues: list[dict] = []
+        for rec in serialized:
+            credits_value = rec.get("credits")
+            if isinstance(credits_value, float) and not float(credits_value).is_integer():
+                fractional_issues.append({"lecture_code": rec.get("講義コード") or rec.get("lecture_code"), "credits": credits_value})
+        if fractional_issues:
+            # Write issues file for downstream inspection
+            issues_path = output_file.parent / "credits_issues.json"
+            pd.Series(fractional_issues).to_json(issues_path, force_ascii=False, orient="records", indent=2)
+            if getattr(self.settings, "fail_on_fractional_credits", False):
+                config.logger.error("Fractional credits found and 'fail_on_fractional_credits' is set. Aborting save.")
+                raise ValueError("Fractional credits detected in data; aborting due to settings.")
+            else:
+                config.logger.warning(f"Fractional credits detected. Details written to {issues_path}")
         output_file.parent.mkdir(parents=True, exist_ok=True)
         df.to_json(output_file, orient="records", force_ascii=False, indent=2)
         csv_path = output_file.with_suffix('.csv')
