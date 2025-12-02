@@ -3,18 +3,20 @@ import sys
 from pathlib import Path
 
 
-def has_null_or_empty(obj):
+def has_null(obj):
+    """Return True if any value is None in obj (recursively), False otherwise.
+
+    Empty strings are permitted; this function only detects null/None values.
+    """
     if obj is None:
-        return True
-    if isinstance(obj, str) and obj.strip() == "":
         return True
     if isinstance(obj, dict):
         for v in obj.values():
-            if has_null_or_empty(v):
+            if has_null(v):
                 return True
     if isinstance(obj, list):
         for v in obj:
-            if has_null_or_empty(v):
+            if has_null(v):
                 return True
     return False
 
@@ -36,7 +38,7 @@ def main():
     problems = []
     if isinstance(data, list):
         for i, rec in enumerate(data):
-            if has_null_or_empty(rec):
+            if has_null(rec):
                 problems.append((i, rec))
 
     if problems:

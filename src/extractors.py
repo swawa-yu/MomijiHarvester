@@ -174,21 +174,12 @@ def extract_subject_data(html_content: str, file_identifier: str) -> Subject | N
         config.logger.info(f"[{file_identifier}] No detail table found; skipping subject extraction.")
         return None
 
-    try:
-        actual_headers = extract_headers(soup)
-        validate_headers(actual_headers, file_identifier)
-    except HeaderMismatchError as e:
-        config.logger.error(f"Stopping extraction for {file_identifier} due to header mismatch: {e}")
-        return None
-    except Exception as e:
-        config.logger.error(f"Error during header extraction/validation for {file_identifier}: {e}")
-        return None
+    # Let header mismatch and other exceptions propagate so the CLI/test
+    # harness can report and handle them. Do not swallow these errors.
+    actual_headers = extract_headers(soup)
+    validate_headers(actual_headers, file_identifier)
 
-    try:
-        raw_data_dict = _parse_detail_table(soup)
-    except Exception as e:
-        config.logger.error(f"Error parsing detail table for {file_identifier}: {e}")
-        return None
+    raw_data_dict = _parse_detail_table(soup)
 
     # If there are no parsed values, treat HTML as invalid and stop
     if not raw_data_dict:
@@ -242,14 +233,14 @@ def extract_subject_data(html_content: str, file_identifier: str) -> Subject | N
             is_list_type = False
 
         if is_list_type:
-            subject_data[field_name] = _split_list_value(cleaned_value)
+            # Ensure lists are always represented as lists (empty list if missing)
+            subject_data[field_name] = _split_list_value(cleaned_value) or []
         else:
-            subject_data[field_name] = cleaned_value
+            # For non-list string-like fields, normalize missing values to empty string
+            subject_data[field_name] = cleaned_value if cleaned_value is not None else ""
 
-    try:
-        subject = Subject(**subject_data)
-        return subject
-    except Exception as e:
-        config.logger.error(f"[{file_identifier}] Error creating/validating Subject model: {e}")
-        config.logger.debug(f"Data used for validation: {subject_data}")
-        return None
+    # Construct the subject; Pydantic ValidationError should raise and be
+    # handled by the caller/test harness. Avoid swallowing validation
+    # exceptions so failures are explicit and visible to the operator.
+    subject = Subject(**subject_data)
+    return subject

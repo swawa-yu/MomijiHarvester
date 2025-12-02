@@ -2,483 +2,200 @@
   "description": "Pydantic model representing a syllabus subject. Field aliases are set to\nJapanese headers used in the Momiji syllabus HTML tables so that parsed\ndictionaries with headers as keys can be passed directly to the model.",
   "properties": {
     "年度": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "年度"
+      "title": "年度",
+      "type": "string"
     },
     "開講部局": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "開講部局"
+      "title": "開講部局",
+      "type": "string"
     },
     "講義コード": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "講義コード"
+      "title": "講義コード",
+      "type": "string"
     },
     "科目区分": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "科目区分"
+      "title": "科目区分",
+      "type": "string"
     },
     "授業科目名": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "授業科目名"
+      "title": "授業科目名",
+      "type": "string"
     },
     "授業科目名（フリガナ）": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "授業科目名（フリガナ）"
+      "type": "string"
     },
     "英文授業科目名": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "英文授業科目名"
+      "title": "英文授業科目名",
+      "type": "string"
     },
     "担当教員名": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "担当教員名"
+      "title": "担当教員名",
+      "type": "string"
     },
     "担当教員名(フリガナ)": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "担当教員名(フリガナ)"
+      "type": "string"
     },
     "開講キャンパス": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "開講キャンパス"
+      "title": "開講キャンパス",
+      "type": "string"
     },
     "開設期": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "開設期"
+      "title": "開設期",
+      "type": "string"
     },
     "曜日・時限・講義室": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "曜日・時限・講義室"
+      "title": "曜日・時限・講義室",
+      "type": "string"
     },
     "授業の方法": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "授業の方法"
+      "title": "授業の方法",
+      "type": "string"
     },
     "授業の方法【詳細情報】": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "授業の方法【詳細情報】"
+      "type": "string"
     },
     "単位": {
-      "anyOf": [
-        {
-          "type": "integer"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "単位"
+      "title": "単位",
+      "type": "integer"
     },
     "週時間": {
-      "anyOf": [
-        {
-          "type": "integer"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "週時間"
+      "title": "週時間",
+      "type": "integer"
     },
     "使用言語": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "使用言語"
+      "title": "使用言語",
+      "type": "string"
     },
     "学習の段階": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "学習の段階"
+      "title": "学習の段階",
+      "type": "string"
     },
     "学問分野（分野）": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "学問分野（分野）"
+      "title": "学問分野（分野）",
+      "type": "string"
     },
     "学問分野（分科）": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "学問分野（分科）"
+      "title": "学問分野（分科）",
+      "type": "string"
     },
     "対象学生": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "対象学生"
+      "title": "対象学生",
+      "type": "string"
     },
     "授業のキーワード": {
-      "anyOf": [
-        {
-          "items": {
-            "type": "string"
-          },
-          "type": "array"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "授業のキーワード"
+      "title": "授業のキーワード",
+      "type": "string"
     },
     "教職専門科目": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "教職専門科目"
+      "title": "教職専門科目",
+      "type": "string"
     },
     "教科専門科目": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "教科専門科目"
+      "title": "教科専門科目",
+      "type": "string"
     },
     "教養教育でのこの授業の位置づけ": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "教養教育でのこの授業の位置づけ"
+      "title": "教養教育でのこの授業の位置づけ",
+      "type": "string"
     },
     "学習の成果": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "学習の成果"
+      "title": "学習の成果",
+      "type": "string"
     },
     "授業の目標・概要等": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "授業の目標・概要等"
+      "title": "授業の目標・概要等",
+      "type": "string"
     },
     "授業計画": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "授業計画"
+      "title": "授業計画",
+      "type": "string"
     },
     "教科書・参考書等": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "教科書・参考書等"
+      "title": "教科書・参考書等",
+      "type": "string"
     },
     "授業で使用するメディア・機器等": {
-      "anyOf": [
-        {
-          "items": {
-            "type": "string"
-          },
-          "type": "array"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "授業で使用するメディア・機器等"
+      "title": "授業で使用するメディア・機器等",
+      "type": "string"
     },
     "【詳細情報】": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "【詳細情報】"
+      "title": "【詳細情報】",
+      "type": "string"
     },
     "授業で取り入れる学習手法": {
-      "anyOf": [
-        {
-          "items": {
-            "type": "string"
-          },
-          "type": "array"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "授業で取り入れる学習手法"
+      "title": "授業で取り入れる学習手法",
+      "type": "string"
     },
     "予習・復習へのアドバイス": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "予習・復習へのアドバイス"
+      "title": "予習・復習へのアドバイス",
+      "type": "string"
     },
     "履修上の注意受講条件等": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "履修上の注意受講条件等"
+      "title": "履修上の注意受講条件等",
+      "type": "string"
     },
     "成績評価の基準等": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "成績評価の基準等"
+      "title": "成績評価の基準等",
+      "type": "string"
     },
     "実務経験": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "実務経験"
+      "title": "実務経験",
+      "type": "string"
     },
     "実務経験の概要とそれに基づく授業内容": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "実務経験の概要とそれに基づく授業内容"
+      "title": "実務経験の概要とそれに基づく授業内容",
+      "type": "string"
     },
     "メッセージ": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "メッセージ"
+      "title": "メッセージ",
+      "type": "string"
     },
     "その他": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "その他"
+      "title": "その他",
+      "type": "string"
     }
   },
+  "required": [
+    "年度",
+    "開講部局",
+    "講義コード",
+    "科目区分",
+    "授業科目名",
+    "授業科目名（フリガナ）",
+    "英文授業科目名",
+    "担当教員名",
+    "担当教員名(フリガナ)",
+    "開講キャンパス",
+    "開設期",
+    "曜日・時限・講義室",
+    "授業の方法",
+    "授業の方法【詳細情報】",
+    "単位",
+    "週時間",
+    "使用言語",
+    "学習の段階",
+    "学問分野（分野）",
+    "学問分野（分科）",
+    "対象学生",
+    "授業のキーワード",
+    "教職専門科目",
+    "教科専門科目",
+    "教養教育でのこの授業の位置づけ",
+    "学習の成果",
+    "授業の目標・概要等",
+    "授業計画",
+    "教科書・参考書等",
+    "授業で使用するメディア・機器等",
+    "【詳細情報】",
+    "授業で取り入れる学習手法",
+    "予習・復習へのアドバイス",
+    "履修上の注意受講条件等",
+    "成績評価の基準等",
+    "実務経験",
+    "実務経験の概要とそれに基づく授業内容",
+    "メッセージ",
+    "その他"
+  ],
   "title": "Subject",
   "type": "object"
 }

@@ -1,16 +1,18 @@
 from pathlib import Path
 import json
-from scripts.validate_json_no_nulls import has_null_or_empty
+from scripts.validate_json_no_nulls import has_null
 
 from harvester import Harvester
 from settings import get_settings
 from models import Subject
 
 
-def test_save_results_credits_integer(tmp_path: Path):
+def test_save_results_credits_integer(tmp_path: Path, minimal_subject_data: dict):
     settings = get_settings(None)
     harv = Harvester(settings)
-    subjects = [Subject(lecture_code="10000100", credits=2.0, subject_name="テスト科目")]
+    minimal = minimal_subject_data.copy()
+    minimal.update({"単位": 2})
+    subjects = [Subject(**minimal)]
     out = tmp_path / "test_output.json"
     harv.save_results(subjects, out)
     assert out.exists()
@@ -20,15 +22,17 @@ def test_save_results_credits_integer(tmp_path: Path):
     assert data[0]["credits"] == 2
 
 
-def test_fractional_credits_writes_issues(tmp_path: Path):
+def test_fractional_credits_writes_issues(tmp_path: Path, minimal_subject_data: dict):
     # Model validation should reject fractional credits, so attempting to
     # create a Subject with fractional credits should raise an error and not be processed.
     import pytest
     with pytest.raises(ValueError):
-        Subject(lecture_code="20000200", credits=1.5, subject_name="テスト_科目_単位数_非整数")
+        minimal = minimal_subject_data.copy()
+        minimal.update({"講義コード": "20000200", "単位": 1.5})
+        Subject(**minimal)
 
 
-def test_harvest_skips_invalid_subjects(tmp_path: Path):
+def test_harvest_skips_invalid_subjects(tmp_path: Path, minimal_subject_data: dict):
     settings = get_settings(None)
     harv = Harvester(settings)
     # craft subject data which would be rejected by the model when parsing
@@ -36,10 +40,12 @@ def test_harvest_skips_invalid_subjects(tmp_path: Path):
     bad_subject_dict = {"講義コード": "20000200", "単位": "1.5", "授業科目名": "テスト_科目_単位数_非整数"}
     # We simulate extract_subject_data returning None on invalid input by not creating a Subject
     # For the purposes of this unit test, ensure save_results works with valid data and does not fail
-    subjects = [Subject(lecture_code="10000100", credits=2, subject_name="テスト_科目_単位数_整数")]
+    minimal = minimal_subject_data.copy()
+    minimal.update({"単位": 2})
+    subjects = [Subject(**minimal)]
     out = tmp_path / "test_output_valid.json"
     harv.save_results(subjects, out)
     assert out.exists()
-    # Ensure output JSON does not contain nulls or empty strings
+    # Ensure output JSON does not contain nulls (empty strings are allowed)
     data = json.loads(out.read_text(encoding="utf-8"))
-    assert all(not has_null_or_empty(rec) for rec in data)
+    assert all(not has_null(rec) for rec in data)

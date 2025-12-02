@@ -60,17 +60,15 @@ class Harvester:
                 except Exception:
                     # If anything unexpected happens, leave it as-is
                     pass
-            # Remove keys that are None or empty string to avoid nulls/empty strings in output
-            cleaned = {k: v for k, v in d.items() if v is not None and not (isinstance(v, str) and v.strip() == "")}
+            # Remove keys that are None only (keep empty strings; required fields
+            # must exist as empty strings if no value was present).
+            cleaned = {k: v for k, v in d.items() if v is not None}
             serialized.append(cleaned)
         df = pd.DataFrame(serialized)
         # At this point, models enforce integer credits; serialized values should be int for credits
         output_file.parent.mkdir(parents=True, exist_ok=True)
         df.to_json(output_file, orient="records", force_ascii=False, indent=2)
         csv_path = output_file.with_suffix('.csv')
-        # Use to_csv for CSV; convert list fields into joined strings
+        # Use to_csv for CSV; all fields are strings or ints now
         df2 = df.copy()
-        for c in df2.columns:
-            if df2[c].apply(lambda x: isinstance(x, list)).any():
-                df2[c] = df2[c].apply(lambda x: ', '.join(x) if isinstance(x, list) else x)
         df2.to_csv(csv_path, index=False)
