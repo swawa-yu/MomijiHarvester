@@ -46,14 +46,14 @@ def validate_headers(actual_headers: list[str], file_identifier: str = "Unknown 
         config.logger.warning(f"[{file_identifier}] Expected headers missing: {missing_headers}")
     if error_occurred:
         # Keep message length reasonable to satisfy linters by splitting into two logs
-        raise HeaderMismatchError(
-            f"Header mismatch detected in {file_identifier}. Unexpected: {unexpected_headers}"
-        )
+        raise HeaderMismatchError(f"Header mismatch detected in {file_identifier}. Unexpected: {unexpected_headers}")
     else:
         config.logger.info(f"[{file_identifier}] Headers validated successfully.")
 
 
-def _parse_detail_table(soup: BeautifulSoup) -> dict[str, str]:  # noqa: PLR0912, PLR0915
+def _parse_detail_table(
+    soup: BeautifulSoup,
+) -> dict[str, str]:
     """シラバス詳細テーブルを解析し、ヘッダーとデータの辞書を作成する。rowspanを考慮する。"""
     data_dict: dict[str, str] = {}
     table = soup.select_one("body > blockquote > table:nth-of-type(2)")
@@ -125,7 +125,11 @@ def _parse_detail_table(soup: BeautifulSoup) -> dict[str, str]:  # noqa: PLR0912
                 if rowspan > 1:
                     for i in range(colspan):
                         col_to_apply = current_col_idx + i
-                        row_span_offset[col_to_apply] = (rowspan - 1, effective_header, data)
+                        row_span_offset[col_to_apply] = (
+                            rowspan - 1,
+                            effective_header,
+                            data,
+                        )
                         processed_indices.add(col_to_apply)
 
                 if effective_header not in data_dict:
@@ -162,7 +166,7 @@ def _split_list_value(value: str | None) -> list[str] | None:
     return items if items else None
 
 
-def extract_subject_data(html_content: str, file_identifier: str) -> Subject | None:  # noqa: PLR0911, PLR0912, PLR0915
+def extract_subject_data(html_content: str, file_identifier: str) -> Subject | None:
     """HTMLコンテンツ文字列から Subject モデルのデータを抽出する。ヘッダー検証を含む。"""
     soup = BeautifulSoup(html_content, "html5lib")
 

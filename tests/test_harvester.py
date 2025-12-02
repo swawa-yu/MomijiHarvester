@@ -1,10 +1,10 @@
-from pathlib import Path
 import json
-from scripts.validate_json_no_nulls import has_null
+from pathlib import Path
 
 from harvester import Harvester
-from settings import get_settings
 from models import Subject
+from scripts.validate_json_no_nulls import has_null
+from settings import get_settings
 
 
 def test_save_results_credits_integer(tmp_path: Path, minimal_subject_data: dict):
@@ -26,6 +26,7 @@ def test_fractional_credits_writes_issues(tmp_path: Path, minimal_subject_data: 
     # Model validation should reject fractional credits, so attempting to
     # create a Subject with fractional credits should raise an error and not be processed.
     import pytest
+
     with pytest.raises(ValueError):
         minimal = minimal_subject_data.copy()
         minimal.update({"講義コード": "20000200", "単位": 1.5})
@@ -37,7 +38,6 @@ def test_harvest_skips_invalid_subjects(tmp_path: Path, minimal_subject_data: di
     harv = Harvester(settings)
     # craft subject data which would be rejected by the model when parsing
     # to simulate the extractor failing: use a dict and avoid instantiating Subject
-    bad_subject_dict = {"講義コード": "20000200", "単位": "1.5", "授業科目名": "テスト_科目_単位数_非整数"}
     # We simulate extract_subject_data returning None on invalid input by not creating a Subject
     # For the purposes of this unit test, ensure save_results works with valid data and does not fail
     minimal = minimal_subject_data.copy()

@@ -20,4 +20,3 @@ class Settings:
 
 def get_settings(env_file: str | Path | None = None) -> Settings:
     return Settings(_env_file=str(env_file) if env_file is not None else None)
-

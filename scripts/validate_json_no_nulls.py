@@ -1,6 +1,9 @@
 import json
+import logging
 import sys
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 
 def has_null(obj):
@@ -23,16 +26,16 @@ def has_null(obj):
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: validate_json_no_nulls.py <json-file>")
+        logger.error("Usage: validate_json_no_nulls.py <json-file>")
         return 2
     p = Path(sys.argv[1])
     if not p.exists():
-        print(f"File not found: {p}")
+        logger.error("File not found: %s", p)
         return 2
     try:
         data = json.loads(p.read_text(encoding="utf-8"))
-    except Exception as e:
-        print(f"Failed to load JSON: {e}")
+    except Exception as e:  # noqa: BLE001
+        logger.exception("Failed to load JSON: %s", e)
         return 2
 
     problems = []
@@ -42,14 +45,14 @@ def main():
                 problems.append((i, rec))
 
     if problems:
-        print(f"Found {len(problems)} records containing nulls or empty strings")
+        logger.error("Found %d records containing nulls or empty strings", len(problems))
         for idx, rec in problems[:10]:
-            print(f"Record {idx}: {rec}")
+            logger.error("Record %d: %s", idx, rec)
         return 1
 
-    print("No nulls or empty strings found in JSON.")
+    logger.info("No nulls found in JSON.")
     return 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

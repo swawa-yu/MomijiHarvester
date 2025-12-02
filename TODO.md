@@ -12,5 +12,7 @@
 - ruffなどで必要以上に許容しないようにする
 - null(None)を許容しないようにする。
   - jsonに対して""がないかをチェックするスクリプトを用意する。
-- pre-commitの導入
-- required Yes は全てそうなんだからわざわざ書かない
+- pre-commitの導入  (完了)
+- required Yes は全てそうなんだからわざわざ書かない  (対応済み: `schema` Markdown から削除)
+- has_null()の存在意義
+- pre-commitはまだ動いていない

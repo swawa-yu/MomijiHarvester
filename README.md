@@ -88,6 +88,23 @@ python -m src.cli --mode local-small --local-dir tests/fixtures/html/small --out
 * 設定周りの強化（`.env` あるいは `pydantic-settings` の導入）
 * HTML 構造の変更に対する堅牢性の向上と追加の E2E テスト
 
+## pre-commit の導入
+
+このリポジトリは `pre-commit` によるコード品質フックが導入されています。ローカルで作業する前に以下の手順で導入してください。
+
+```bash
+# 仮想環境を有効化している前提
+python -m pip install pre-commit
+pre-commit install
+# 手元の全ファイルに対して自動修正を実行 (初回または追従後におすすめ)
+pre-commit run --all-files
+```
+
+CI（GitHub Actions）にも `pre-commit` が組み込まれており、Push / PR 時にフックが実行されます。
+
+**注意**: `pre-commit` はフォーマッタやリンタでファイルを自動修正します。初回では差分が大量に発生する可能性があるので、差分を確認してからコミットしてください。
+
+
 ## ライセンス
 
 [ここにライセンス情報を記述]

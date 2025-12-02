@@ -1,4 +1,3 @@
-
 import re
 
 from pydantic import AliasChoices, BaseModel, Field, field_validator, model_validator
@@ -223,7 +222,6 @@ class Subject(BaseModel):
 #     # "メッセージ": str,
 #     # "その他": str,
 #     # # 注意: 最後の「授業改善アンケート」に関するヘッダーは意図的に除外（旧コード参考）
-
 
 
 # class HeaderMismatchError(ValueError):

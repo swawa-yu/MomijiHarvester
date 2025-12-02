@@ -68,7 +68,7 @@ class Harvester:
         # At this point, models enforce integer credits; serialized values should be int for credits
         output_file.parent.mkdir(parents=True, exist_ok=True)
         df.to_json(output_file, orient="records", force_ascii=False, indent=2)
-        csv_path = output_file.with_suffix('.csv')
+        csv_path = output_file.with_suffix(".csv")
         # Use to_csv for CSV; all fields are strings or ints now
         df2 = df.copy()
         df2.to_csv(csv_path, index=False)

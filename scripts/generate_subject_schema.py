@@ -1,5 +1,5 @@
-from pathlib import Path
 import json
+from pathlib import Path
 
 from models import Subject
 
@@ -21,13 +21,9 @@ def generate_json_schema(out_dir: Path):
                 # Replace property with the schema_type (no null)
                 props[k] = schema_type
     # Add required list with all property names (aliases) derived from the model
-    try:
-        from models import Subject as SubjectModel
-        fields = SubjectModel.model_fields
-        required_aliases = [getattr(f, "alias", name) for name, f in fields.items()]
-        schema["required"] = required_aliases
-    except Exception:
-        pass
+    fields = Subject.model_fields
+    required_aliases = [getattr(f, "alias", name) for name, f in fields.items()]
+    schema["required"] = required_aliases
     json_path = out_dir / "subject.schema.json"
     json_path.write_text(json.dumps(schema, indent=2, ensure_ascii=False), encoding="utf-8")
     return json_path, schema
@@ -41,15 +37,10 @@ def generate_markdown_schema(out_dir: Path, schema):
         f.write("| field (alias) | JSON type | description |\n")
         f.write("|---|---|---:|---|\n")
         # Use the pydantic model fields when possible to preserve ordering
-        try:
-            from models import Subject as SubjectModel
-            fields = SubjectModel.model_fields
-        except Exception:
-            fields = {}
+        fields = Subject.model_fields
         props = schema.get("properties", {})
         # `required` field is intentionally omitted from the markdown as all
         # fields are required; adding a column would be noisy.
-        required_list = schema.get("required", [])
         for model_field_name, info in fields.items():
             # info is pydantic FieldInfo; fetch alias and annotation
             alias = getattr(info, "alias", model_field_name)
@@ -66,4 +57,8 @@ if __name__ == "__main__":
     out_dir = Path("schema")
     json_path, schema = generate_json_schema(out_dir)
     md_path = generate_markdown_schema(out_dir, schema)
-    print("Generated:", json_path, md_path)
+    # Logging is preferable to print for CLI programs
+    import logging
+
+    logging.basicConfig(level=logging.INFO)
+    logging.getLogger(__name__).info("Generated: %s %s", json_path, md_path)

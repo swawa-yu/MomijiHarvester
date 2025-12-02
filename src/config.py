@@ -61,6 +61,9 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
-    handlers=[logging.FileHandler(OUTPUT_DIR / "momijiharvester.log", encoding="utf-8"), logging.StreamHandler()],
+    handlers=[
+        logging.FileHandler(OUTPUT_DIR / "momijiharvester.log", encoding="utf-8"),
+        logging.StreamHandler(),
+    ],
 )
 logger = logging.getLogger(__name__)
