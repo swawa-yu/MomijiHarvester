@@ -34,7 +34,34 @@ class Harvester:
     def save_results(self, subjects: list[Subject], output_file: Path) -> None:
         # Write JSON and CSV files
         # model_dump returns serialized dictionaries for Pydantic v2 models
-        df = pd.DataFrame([s.model_dump() for s in subjects])
+        # Ensure final JSON preserves historical data formats: cast credits to integer
+        # when they represent whole numbers, to maintain compatibility with existing
+        # downstream consumers that expect integers.
+        serialized = []
+        for s in subjects:
+            d = s.model_dump()
+            if "credits" in d and d.get("credits") is not None:
+                try:
+                    v = d["credits"]
+                    # If it's float and integer-valued, convert to int
+                    if isinstance(v, float) and v.is_integer():
+                        d["credits"] = int(v)
+                    # If it's a string numeric, attempt to parse
+                    elif isinstance(v, str):
+                        try:
+                            fv = float(v)
+                            if fv.is_integer():
+                                d["credits"] = int(fv)
+                            else:
+                                # leave as string if fractional
+                                d["credits"] = v
+                        except Exception:
+                            d["credits"] = v
+                except Exception:
+                    # If anything unexpected happens, leave it as-is
+                    pass
+            serialized.append(d)
+        df = pd.DataFrame(serialized)
         output_file.parent.mkdir(parents=True, exist_ok=True)
         df.to_json(output_file, orient="records", force_ascii=False, indent=2)
         csv_path = output_file.with_suffix('.csv')
